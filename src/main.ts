@@ -1,9 +1,9 @@
-import {Visitor} from "./model/visitor.js";
 import type {Component} from "./model/components/component.abstract.js";
 import {VideoComponent} from "./model/components/video-component.js";
 import {ImageComponent} from "./model/components/image-component.js";
+import {KernelVisitor} from "./kernel/kernel-visitor.js";
 
-let visitor = new Visitor();
+let visitor = new KernelVisitor();
 
 let componentArray: Component[] = [];
 let videoComponent = new VideoComponent("testurl");

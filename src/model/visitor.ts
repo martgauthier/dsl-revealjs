@@ -10,30 +10,26 @@ import type {ReplaceAction} from "./actions/replace-action.js";
 import type {DisplayAction} from "./actions/display-action.js";
 import type {CodeHighlightAction} from "./actions/codehighlight-action.js";
 
-export class Visitor {
-    visitTemplate(template: Template): void {
-    }
+export interface Visitor {
+    visitTemplate(template: Template): void;
 
-    visitVideoComponent(videoComponent: VideoComponent): void {
-        console.log("VIDEO COMPONENT " + videoComponent.src);
-    }
+    visitVideoComponent(videoComponent: VideoComponent): void;
 
-    visitSlide(slide: Slide) {}
+    visitSlide(slide: Slide): void;
 
-    visitDiapo(diapo: Diapo) {}
+    visitDiapo(diapo: Diapo): void;
 
-    visitTextComponent(textComponent: TextComponent) {}
+    visitTextComponent(textComponent: TextComponent): void;
 
-    visitImageComponent(imageComponent: ImageComponent) {
-        console.log("IMAGE COMPONENT " + imageComponent.src);}
+    visitImageComponent(imageComponent: ImageComponent): void;
 
-    visitFrameComponent(frameComponent: FrameComponent) {}
+    visitFrameComponent(frameComponent: FrameComponent): void;
 
-    visitCodeComponent(codeComponent: CodeComponent) {}
+    visitCodeComponent(codeComponent: CodeComponent): void;
 
-    visitReplaceAction(replaceAction: ReplaceAction) {}
+    visitReplaceAction(replaceAction: ReplaceAction): void;
 
-    visitDisplayAction(displayAction: DisplayAction) {}
+    visitDisplayAction(displayAction: DisplayAction): void;
 
-    visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction) {}
+    visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void;
 }

@@ -1,0 +1,11 @@
+{
+  "projectName": "DslRevealJs",
+  "languages": [
+    {
+      "id": "slide-ml",
+      "grammar": "src/language-server/slide-ml.langium",
+      "fileExtensions": [".sml"]
+    }
+  ],
+  "out": "src/language-server/generated"
+}

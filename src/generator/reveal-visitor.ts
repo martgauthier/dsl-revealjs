@@ -12,6 +12,7 @@ export class RevealVisitor implements Visitor {
   
 
   private slidesHtml: string[] = [];
+  private currentSlideContent: string[] = [];
 
   getResult(): string {
     return `
@@ -48,23 +49,22 @@ export class RevealVisitor implements Visitor {
   }
 
   visitSlide(slide: Slide): void {
-    const content: string[] = [];
+  this.currentSlideContent = [];
 
     for (const component of slide.components) {
-      if (component instanceof TextComponent) {
-        content.push(`<p>${component.text}</p>`);
-      }
+     component.accept(this);
     }
 
     this.slidesHtml.push(`
 <section>
-  ${content.join("\n")}
+  ${this.currentSlideContent.join("\n")}
 </section>
     `);
   }
 
-  // --- Non utilisés en V0 ---
-  visitTextComponent(): void { }
+  visitTextComponent(textComponent: TextComponent): void {
+    this.currentSlideContent.push(`<p>${textComponent.text}</p>`);
+  }
   visitImageComponent(): void { }
   visitVideoComponent(): void { }
   visitFrameComponent(): void { }

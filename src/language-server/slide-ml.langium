@@ -24,9 +24,17 @@ Slide:
 ;
 
 Component:
-  TextComponent
+  TextComponent | VideoComponent | ImageComponent
 ;
 
 TextComponent:
   'text' value=STRING
+;
+
+VideoComponent:
+  'video' src=STRING autoPlay?=('autoPlay')?
+;
+
+ImageComponent:
+  'image' src=STRING ('alt' alt=STRING)?
 ;

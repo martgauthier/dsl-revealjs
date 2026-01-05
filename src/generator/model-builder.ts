@@ -2,6 +2,7 @@ import { Diapo } from "../model/diapo.js";
 import { Slide } from "../model/slide.js";
 import { TextComponent } from "../model/components/text-component.js";
 import { Size } from "../model/enums/size.enum.js";
+import {CodeComponent} from "../model/components/code-component.js";
 
 /**
  * Transforme l’AST Langium → modèle métier
@@ -18,7 +19,9 @@ function buildSlide(slideAst: any): Slide {
       const text = c.value;
       return new TextComponent(text, Size.DEFAULT);
     }
-    throw new Error("Unknown component type: " + c.$type);
+    else if (c.$type === "CodeComponent"){
+      return new CodeComponent(c.value, c.language, Size.DEFAULT);
+    }
   });
 
   return new Slide(

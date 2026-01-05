@@ -23,6 +23,8 @@ export class RevealVisitor implements Visitor {
   <title>Reveal DSL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+  <script src="https://unpkg.com/reveal.js/plugin/highlight/highlight.js"></script>
+   
 </head>
 <body>
 
@@ -69,7 +71,15 @@ export class RevealVisitor implements Visitor {
   visitVideoComponent(): void { }
   visitFrameComponent(): void { }
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void {}
+  visitCodeComponent(codeComponent: CodeComponent): void {
+    this.currentSlideContent.push(`
+      <pre>
+        <code class="language-${codeComponent.language}">
+            ${codeComponent.content}
+        </code>
+      </pre>
+  `);
+  }
   visitReplaceAction(replaceAction: ReplaceAction): void {}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}

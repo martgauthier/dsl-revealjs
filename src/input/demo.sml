@@ -1,6 +1,7 @@
 diapo {
   slide {
-    text "Hello DSL"
+    text "Example TypeScript"
+    code language typescript "const x: number = 42;"
   }
 
   slide {

@@ -5,6 +5,10 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
+terminal ID:
+  /[a-zA-Z_][a-zA-Z0-9_]*/
+;
+
 terminal SizeEnum:
   'XS' | 'S'  | 'M' | 'L' | 'XL';
 
@@ -71,7 +75,7 @@ Slide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent
+  TextComponent | VideoComponent | ImageComponent | CodeComponent
 ;
 
 TextComponent:
@@ -84,6 +88,12 @@ VideoComponent:
 
 ImageComponent:
   'image' src=STRING ('alt' alt=STRING)?
+;
+
+CodeComponent:
+    'code'
+    'language' language=ID
+    value=STRING
 ;
 
 hidden terminal WS: /\s+/;

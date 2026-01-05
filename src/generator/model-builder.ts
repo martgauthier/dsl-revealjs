@@ -1,9 +1,23 @@
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import { Size } from "../model/enums/size.enum.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import {Size} from "../model/enums/size.enum.js";
 import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
+import type {Component} from "../model/components/component.abstract.js";
+import {CodeComponent} from "../model/components/code-component.js";
+
+type ComponentBuilder = (ast:any) => Component;
+
+const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
+  TextComponent: (ast) => {
+    return new TextComponent(ast.value, Size.DEFAULT);
+  },
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
+  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT)
+}
+
 
 /**
  * Transforme l’AST Langium → modèle métier
@@ -15,20 +29,11 @@ export function buildDiapo(diapoAst: any): Diapo {
 
 function buildSlide(slideAst: any): Slide {
   const components = slideAst.components.map((c: any) => {
-    if (c.$type === "TextComponent") {
-      // Langium donne la string avec les guillemets → on les enlève
-      const text = c.value;
-      return new TextComponent(text, Size.DEFAULT);
-    }else if (c.$type === "VideoComponent") {
-      const src = c.src ;
-      const autoPlay = c.autoPlay;
-      return new VideoComponent(src, autoPlay, Size.DEFAULT);
-    }else if (c.$type === "ImageComponent"){
-      const src = c.src;
-      const alt = c.alt;
-      return new ImageComponent(src, alt, Size.DEFAULT);
+    const builder = COMPONENT_BUILDERS[c.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${c.$type}`);
     }
-    throw new Error("Unknown component type: " + c.$type);
+    return builder(c);
   });
 
   return new Slide(
@@ -38,3 +43,19 @@ function buildSlide(slideAst: any): Slide {
     []                // steps (actions)
   );
 }
+
+function dedent(text: string): string {
+  const lines = text.replace(/\t/g, "  ").split("\n");
+  // enlever lignes vides début / fin
+  while (lines.length && lines[0]!.trim() === "") lines.shift();
+  while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();
+
+  const indent = Math.min(
+      ...lines
+          .filter(l => l.trim())
+          .map(l => l.match(/^ */)![0].length)
+  );
+
+  return lines.map(l => l.slice(indent)).join("\n");
+}
+

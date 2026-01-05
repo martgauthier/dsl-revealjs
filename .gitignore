@@ -141,5 +141,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 index.html
-src/input/*
-src/language-server/generated/*
+src/input/
+src/language-server/generated/

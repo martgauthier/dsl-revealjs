@@ -17,14 +17,7 @@ diapo {
 }
 
 ```
-Génerer le parseur ( au premier lancement ou après modification de la grammaire ):
-
-```
-npm run langium:generate
-
-```
-
-Génerer le html ( index.html à la racine )
+Génerer le parseur + Génerer le html ( index.html à la racine )
 ```
 npm start
 ```

@@ -25,11 +25,11 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
   <style>
-  .reveal ul {
-    display: inline-block;
-    text-align: left;
-  }
-</style>
+    .reveal ul {
+      display: inline-block;
+      text-align: left;
+    }
+  </style>
 
 </head>
 <body>

@@ -7,6 +7,7 @@
 import * as langium from 'langium';
 
 export const DslRevealJsTerminals = {
+    ML_STRING: /"""(?:[\s\S]*?""")/,
     STRING: /"(\\(?:[\s\S])|(?:(?!(\\|"))[\s\S]*?))*"/,
 };
 
@@ -17,6 +18,7 @@ export type DslRevealJsKeywordNames =
     | "autoPlay"
     | "diapo"
     | "image"
+    | "latex"
     | "slide"
     | "text"
     | "video"
@@ -25,7 +27,7 @@ export type DslRevealJsKeywordNames =
 
 export type DslRevealJsTokenNames = DslRevealJsTerminalNames | DslRevealJsKeywordNames;
 
-export type Component = ImageComponent | TextComponent | VideoComponent;
+export type Component = ImageComponent | LatexComponent | TextComponent | VideoComponent;
 
 export const Component = {
     $type: 'Component'
@@ -67,6 +69,21 @@ export function isImageComponent(item: unknown): item is ImageComponent {
     return reflection.isInstance(item, ImageComponent.$type);
 }
 
+export interface LatexComponent extends langium.AstNode {
+    readonly $container: Slide;
+    readonly $type: 'LatexComponent';
+    formula: StringValue;
+}
+
+export const LatexComponent = {
+    $type: 'LatexComponent',
+    formula: 'formula'
+} as const;
+
+export function isLatexComponent(item: unknown): item is LatexComponent {
+    return reflection.isInstance(item, LatexComponent.$type);
+}
+
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
     diapo: Diapo;
@@ -96,10 +113,16 @@ export function isSlide(item: unknown): item is Slide {
     return reflection.isInstance(item, Slide.$type);
 }
 
+export type StringValue = string;
+
+export function isStringValue(item: unknown): item is StringValue {
+    return (typeof item === 'string' && (/"(\\(?:[\s\S])|(?:(?!(\\|"))[\s\S]*?))*"/.test(item) || /"""(?:[\s\S]*?""")/.test(item)));
+}
+
 export interface TextComponent extends langium.AstNode {
     readonly $container: Slide;
     readonly $type: 'TextComponent';
-    value: string;
+    value: StringValue;
 }
 
 export const TextComponent = {
@@ -132,6 +155,7 @@ export type DslRevealJsAstType = {
     Component: Component
     Diapo: Diapo
     ImageComponent: ImageComponent
+    LatexComponent: LatexComponent
     Model: Model
     Slide: Slide
     TextComponent: TextComponent
@@ -164,6 +188,15 @@ export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
                 },
                 src: {
                     name: ImageComponent.src
+                }
+            },
+            superTypes: [Component.$type]
+        },
+        LatexComponent: {
+            name: LatexComponent.$type,
+            properties: {
+                formula: {
+                    name: LatexComponent.formula
                 }
             },
             superTypes: [Component.$type]

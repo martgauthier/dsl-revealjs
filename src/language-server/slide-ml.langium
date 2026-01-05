@@ -1,9 +1,14 @@
 grammar SlideML
 
 // ===== TERMINALS =====
+terminal ML_STRING: 
+  '"""' -> '"""'
+;
+
 terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
+
 
 // ===== ENTRY =====
 entry Model:
@@ -22,13 +27,15 @@ Slide:
     components+=Component*
   '}'
 ;
-
+StringValue returns string:
+  STRING | ML_STRING
+;
 Component:
-  TextComponent | VideoComponent | ImageComponent
+  TextComponent | VideoComponent | ImageComponent | LatexComponent
 ;
 
 TextComponent:
-  'text' value=STRING
+  'text' value=StringValue
 ;
 
 VideoComponent:
@@ -37,4 +44,8 @@ VideoComponent:
 
 ImageComponent:
   'image' src=STRING ('alt' alt=STRING)?
+;
+
+LatexComponent:
+  'latex' formula=StringValue
 ;

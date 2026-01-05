@@ -4,6 +4,7 @@ import { TextComponent } from "../model/components/text-component.js";
 import { Size } from "../model/enums/size.enum.js";
 import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
+import { LatexComponent } from "../model/components/latex-component.js";
 
 /**
  * Transforme l’AST Langium → modèle métier
@@ -27,6 +28,9 @@ function buildSlide(slideAst: any): Slide {
       const src = c.src;
       const alt = c.alt;
       return new ImageComponent(src, alt, Size.DEFAULT);
+    } else if (c.$type === "LatexComponent") {
+      const formula = c.formula;
+      return new LatexComponent(formula, Size.DEFAULT);
     }
     throw new Error("Unknown component type: " + c.$type);
   });

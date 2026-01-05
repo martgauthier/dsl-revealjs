@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node dist/main.js && npx langium-cli generate",
-    "langium:generate": "npx langium-cli generate"
+    "start": "tsc && node dist/main.js",
+    "generate": "npx langium-cli generate"
   },
   "author": "",
   "license": "ISC",

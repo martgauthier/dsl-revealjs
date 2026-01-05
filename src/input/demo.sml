@@ -8,21 +8,24 @@ diapo {
 
   slide {
     text "Second slide"
+    text """
+# tring to write text
+with multiple lines 
+### if possible **bold**
+    """
   }
 
-  slide{
-    video "./assets/rick-roll.mp4" autoPlay
-  }
+  slide {
+  text "# Théorème de Pythagore"
+  latex "a^2 + b^2 = c^2"
+  text "Formule fondamentale en géométrie"
 
-  slide{
-    video "./assets/rick-roll.mp4"
-  }
+  text "# Fonction Gamma (cas particulier)"
+  latex """
+\int_{0}^{+\infty} x^{n} e^{-\lambda x} \, dx
+= \frac{n!}{\lambda^{n+1}}, \quad \lambda > 0
+"""
+  text "Lien entre intégrales et factorielle"
+}
 
-  slide{
-    image "https://picsum.photos/400/300"
-  }
-
-  slide{
-    image "https://picsum.photos/400/300" alt "rick qui roll"
-  }
 }

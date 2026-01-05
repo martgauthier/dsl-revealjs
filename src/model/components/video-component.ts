@@ -4,7 +4,7 @@ import type {Visitable} from "../visitable.interface.js";
 import type {Visitor} from "../visitor.js";
 
 export class VideoComponent extends Component {
-    constructor(public src: string, size: Size = Size.DEFAULT) {
+    constructor(public src: string, public autoPlay: Boolean = false, size: Size = Size.DEFAULT) {
         super(size);
     }
 

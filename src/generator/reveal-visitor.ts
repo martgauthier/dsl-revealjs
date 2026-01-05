@@ -24,7 +24,12 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
   <script src="https://unpkg.com/reveal.js/plugin/highlight/highlight.js"></script>
-   
+  <style>
+    .reveal ul {
+      display: inline-block;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
 
@@ -51,10 +56,10 @@ export class RevealVisitor implements Visitor {
   }
 
   visitSlide(slide: Slide): void {
-  this.currentSlideContent = [];
+    this.currentSlideContent = [];
 
     for (const component of slide.components) {
-     component.accept(this);
+      component.accept(this);
     }
 
     this.slidesHtml.push(`
@@ -64,8 +69,9 @@ export class RevealVisitor implements Visitor {
     `);
   }
 
-  visitTextComponent(textComponent: TextComponent): void {
-    this.currentSlideContent.push(`<p>${textComponent.text}</p>`);
+  async visitTextComponent(textComponent: TextComponent): Promise<void> {
+    const html = marked.parse(textComponent.textContent) as string;
+    this.currentSlideContent.push(html);
   }
   visitImageComponent(): void { }
   visitVideoComponent(): void { }

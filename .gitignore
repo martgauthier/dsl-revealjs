@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 
 index.html
 src/input/*
+src/language-server/generated/*

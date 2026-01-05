@@ -3,7 +3,7 @@ import {Size} from "../enums/size.enum.js";
 import type {Visitor} from "../visitor.js";
 
 export class TextComponent extends Component {
-    constructor(public text: string, size: Size = Size.DEFAULT) {
+    constructor(public textContent: string, size: Size = Size.DEFAULT) {
         super(size);
     }
 

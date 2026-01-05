@@ -7,9 +7,10 @@ import type { CodeHighlightAction } from "../model/actions/codehighlight-action.
 import type { DisplayAction } from "../model/actions/display-action.js";
 import type { ReplaceAction } from "../model/actions/replace-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
+import { marked } from "marked";
 
 export class RevealVisitor implements Visitor {
-  
+
 
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
@@ -23,6 +24,13 @@ export class RevealVisitor implements Visitor {
   <title>Reveal DSL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+  <style>
+  .reveal ul {
+    display: inline-block;
+    text-align: left;
+  }
+</style>
+
 </head>
 <body>
 
@@ -32,7 +40,6 @@ export class RevealVisitor implements Visitor {
   </div>
 </div>
 
-<script src="reveal.js/dist/reveal.js"></script>
 <script>
   Reveal.initialize();
 </script>
@@ -42,6 +49,7 @@ export class RevealVisitor implements Visitor {
     `;
   }
 
+
   visitDiapo(diapo: Diapo): void {
     for (const slide of diapo.slides) {
       slide.accept(this);
@@ -49,10 +57,10 @@ export class RevealVisitor implements Visitor {
   }
 
   visitSlide(slide: Slide): void {
-  this.currentSlideContent = [];
+    this.currentSlideContent = [];
 
     for (const component of slide.components) {
-     component.accept(this);
+      component.accept(this);
     }
 
     this.slidesHtml.push(`
@@ -62,16 +70,17 @@ export class RevealVisitor implements Visitor {
     `);
   }
 
-  visitTextComponent(textComponent: TextComponent): void {
-    this.currentSlideContent.push(`<p>${textComponent.text}</p>`);
+  async visitTextComponent(textComponent: TextComponent): Promise<void> {
+    const html = marked.parse(textComponent.textContent) as string;
+    this.currentSlideContent.push(html);
   }
   visitImageComponent(): void { }
   visitVideoComponent(): void { }
   visitFrameComponent(): void { }
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void {}
-  visitReplaceAction(replaceAction: ReplaceAction): void {}
-  visitDisplayAction(displayAction: DisplayAction): void {}
-  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
-  
+  visitCodeComponent(codeComponent: CodeComponent): void { }
+  visitReplaceAction(replaceAction: ReplaceAction): void { }
+  visitDisplayAction(displayAction: DisplayAction): void { }
+  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void { }
+
 }

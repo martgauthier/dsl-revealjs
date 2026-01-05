@@ -11,4 +11,5 @@ export class CodeComponent extends Component {
     accept(visitor: Visitor): void {
         visitor.visitCodeComponent(this);
     }
+
 }

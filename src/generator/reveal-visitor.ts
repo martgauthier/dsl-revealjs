@@ -7,10 +7,12 @@ import type { CodeHighlightAction } from "../model/actions/codehighlight-action.
 import type { DisplayAction } from "../model/actions/display-action.js";
 import type { ReplaceAction } from "../model/actions/replace-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
-import {marked} from "marked";
+import { marked } from "marked";
+import type {VideoComponent} from "../model/components/video-component.js";
+import type {ImageComponent} from "../model/components/image-component.js";
 
 export class RevealVisitor implements Visitor {
-  
+
 
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
@@ -39,6 +41,7 @@ export class RevealVisitor implements Visitor {
         padding:10px;
     }
   </style>
+
 </head>
 <body>
 
@@ -59,6 +62,7 @@ export class RevealVisitor implements Visitor {
 </html>
     `;
   }
+
 
   visitDiapo(diapo: Diapo): void {
     for (const slide of diapo.slides) {
@@ -84,8 +88,16 @@ export class RevealVisitor implements Visitor {
     const html = marked.parse(textComponent.textContent) as string;
     this.currentSlideContent.push(html);
   }
-  visitImageComponent(): void { }
-  visitVideoComponent(): void { }
+
+  visitImageComponent(imageComponent:ImageComponent): void {
+    const content = `<img src="${imageComponent.src}" alt="${imageComponent.alt ? imageComponent.alt : ""}">`
+    this.currentSlideContent.push(content);
+  }
+
+  visitVideoComponent(videoComponent:VideoComponent): void {
+    const content = `<video controls ${videoComponent.autoPlay ? "data-autoplay" : ""} src="${videoComponent.src}"></video>`;
+    this.currentSlideContent.push(content);
+  }
   visitFrameComponent(): void { }
   visitTemplate(): void { }
   visitCodeComponent(codeComponent: CodeComponent): void {

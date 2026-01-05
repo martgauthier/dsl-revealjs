@@ -1,8 +1,23 @@
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import { Size } from "../model/enums/size.enum.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import {Size} from "../model/enums/size.enum.js";
+import {VideoComponent} from "../model/components/video-component.js";
+import {ImageComponent} from "../model/components/image-component.js";
+import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
+
+type ComponentBuilder = (ast:any) => Component;
+
+const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
+  TextComponent: (ast) => {
+    return new TextComponent(ast.value, Size.DEFAULT);
+  },
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
+  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT)
+}
+
 
 /**
  * Transforme l’AST Langium → modèle métier
@@ -14,14 +29,11 @@ export function buildDiapo(diapoAst: any): Diapo {
 
 function buildSlide(slideAst: any): Slide {
   const components = slideAst.components.map((c: any) => {
-    if (c.$type === "TextComponent") {
-      // Langium donne la string avec les guillemets → on les enlève
-      const text = c.value;
-      return new TextComponent(text, Size.DEFAULT);
+    const builder = COMPONENT_BUILDERS[c.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${c.$type}`);
     }
-    else if (c.$type === "CodeComponent"){
-      return new CodeComponent(dedent(c.value), c.language, Size.DEFAULT);
-    }
+    return builder(c);
   });
 
   return new Slide(
@@ -34,8 +46,6 @@ function buildSlide(slideAst: any): Slide {
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");
-  console.log("lines", lines);
-
   // enlever lignes vides début / fin
   while (lines.length && lines[0]!.trim() === "") lines.shift();
   while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();

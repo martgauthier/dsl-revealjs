@@ -28,12 +28,19 @@ Slide:
 ;
 
 Component:
-  TextComponent
-  |  CodeComponent
+  TextComponent | VideoComponent | ImageComponent | CodeComponent
 ;
 
 TextComponent:
   'text' value=STRING
+;
+
+VideoComponent:
+  'video' src=STRING autoPlay?=('autoPlay')?
+;
+
+ImageComponent:
+  'image' src=STRING ('alt' alt=STRING)?
 ;
 
 CodeComponent:

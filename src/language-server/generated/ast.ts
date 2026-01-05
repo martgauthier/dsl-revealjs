@@ -14,11 +14,15 @@ export const DslRevealJsTerminals = {
 export type DslRevealJsTerminalNames = keyof typeof DslRevealJsTerminals;
 
 export type DslRevealJsKeywordNames =
+    | "alt"
+    | "autoPlay"
     | "code"
     | "diapo"
+    | "image"
     | "language"
     | "slide"
     | "text"
+    | "video"
     | "{"
     | "}";
 
@@ -41,7 +45,7 @@ export function isCodeComponent(item: unknown): item is CodeComponent {
     return reflection.isInstance(item, CodeComponent.$type);
 }
 
-export type Component = CodeComponent | TextComponent;
+export type Component = CodeComponent | ImageComponent | TextComponent | VideoComponent;
 
 export const Component = {
     $type: 'Component'
@@ -64,6 +68,23 @@ export const Diapo = {
 
 export function isDiapo(item: unknown): item is Diapo {
     return reflection.isInstance(item, Diapo.$type);
+}
+
+export interface ImageComponent extends langium.AstNode {
+    readonly $container: Slide;
+    readonly $type: 'ImageComponent';
+    alt?: string;
+    src: string;
+}
+
+export const ImageComponent = {
+    $type: 'ImageComponent',
+    alt: 'alt',
+    src: 'src'
+} as const;
+
+export function isImageComponent(item: unknown): item is ImageComponent {
+    return reflection.isInstance(item, ImageComponent.$type);
 }
 
 export interface Model extends langium.AstNode {
@@ -110,13 +131,32 @@ export function isTextComponent(item: unknown): item is TextComponent {
     return reflection.isInstance(item, TextComponent.$type);
 }
 
+export interface VideoComponent extends langium.AstNode {
+    readonly $container: Slide;
+    readonly $type: 'VideoComponent';
+    autoPlay: boolean;
+    src: string;
+}
+
+export const VideoComponent = {
+    $type: 'VideoComponent',
+    autoPlay: 'autoPlay',
+    src: 'src'
+} as const;
+
+export function isVideoComponent(item: unknown): item is VideoComponent {
+    return reflection.isInstance(item, VideoComponent.$type);
+}
+
 export type DslRevealJsAstType = {
     CodeComponent: CodeComponent
     Component: Component
     Diapo: Diapo
+    ImageComponent: ImageComponent
     Model: Model
     Slide: Slide
     TextComponent: TextComponent
+    VideoComponent: VideoComponent
 }
 
 export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
@@ -149,6 +189,18 @@ export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        ImageComponent: {
+            name: ImageComponent.$type,
+            properties: {
+                alt: {
+                    name: ImageComponent.alt
+                },
+                src: {
+                    name: ImageComponent.src
+                }
+            },
+            superTypes: [Component.$type]
+        },
         Model: {
             name: Model.$type,
             properties: {
@@ -173,6 +225,19 @@ export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
             properties: {
                 value: {
                     name: TextComponent.value
+                }
+            },
+            superTypes: [Component.$type]
+        },
+        VideoComponent: {
+            name: VideoComponent.$type,
+            properties: {
+                autoPlay: {
+                    name: VideoComponent.autoPlay,
+                    defaultValue: false
+                },
+                src: {
+                    name: VideoComponent.src
                 }
             },
             superTypes: [Component.$type]

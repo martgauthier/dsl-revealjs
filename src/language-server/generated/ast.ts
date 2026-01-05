@@ -8,6 +8,7 @@ import * as langium from 'langium';
 
 export const DslRevealJsTerminals = {
     STRING: /"(\\(?:[\s\S])|(?:(?!(\\|"))[\s\S]*?))*"/,
+    ID: /[a-zA-Z_][a-zA-Z0-9_]*/,
 };
 
 export type DslRevealJsTerminalNames = keyof typeof DslRevealJsTerminals;
@@ -15,8 +16,10 @@ export type DslRevealJsTerminalNames = keyof typeof DslRevealJsTerminals;
 export type DslRevealJsKeywordNames =
     | "alt"
     | "autoPlay"
+    | "code"
     | "diapo"
     | "image"
+    | "language"
     | "slide"
     | "text"
     | "video"
@@ -25,7 +28,24 @@ export type DslRevealJsKeywordNames =
 
 export type DslRevealJsTokenNames = DslRevealJsTerminalNames | DslRevealJsKeywordNames;
 
-export type Component = ImageComponent | TextComponent | VideoComponent;
+export interface CodeComponent extends langium.AstNode {
+    readonly $container: Slide;
+    readonly $type: 'CodeComponent';
+    language: string;
+    value: string;
+}
+
+export const CodeComponent = {
+    $type: 'CodeComponent',
+    language: 'language',
+    value: 'value'
+} as const;
+
+export function isCodeComponent(item: unknown): item is CodeComponent {
+    return reflection.isInstance(item, CodeComponent.$type);
+}
+
+export type Component = CodeComponent | ImageComponent | TextComponent | VideoComponent;
 
 export const Component = {
     $type: 'Component'
@@ -129,6 +149,7 @@ export function isVideoComponent(item: unknown): item is VideoComponent {
 }
 
 export type DslRevealJsAstType = {
+    CodeComponent: CodeComponent
     Component: Component
     Diapo: Diapo
     ImageComponent: ImageComponent
@@ -140,6 +161,18 @@ export type DslRevealJsAstType = {
 
 export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
     override readonly types = {
+        CodeComponent: {
+            name: CodeComponent.$type,
+            properties: {
+                language: {
+                    name: CodeComponent.language
+                },
+                value: {
+                    name: CodeComponent.value
+                }
+            },
+            superTypes: [Component.$type]
+        },
         Component: {
             name: Component.$type,
             properties: {

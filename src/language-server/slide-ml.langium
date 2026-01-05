@@ -5,6 +5,10 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
+terminal ID:
+  /[a-zA-Z_][a-zA-Z0-9_]*/
+;
+
 // ===== ENTRY =====
 entry Model:
   diapo=Diapo
@@ -24,7 +28,7 @@ Slide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent
+  TextComponent | VideoComponent | ImageComponent | CodeComponent
 ;
 
 TextComponent:
@@ -37,4 +41,10 @@ VideoComponent:
 
 ImageComponent:
   'image' src=STRING ('alt' alt=STRING)?
+;
+
+CodeComponent:
+    'code'
+    'language' language=ID
+    value=STRING
 ;

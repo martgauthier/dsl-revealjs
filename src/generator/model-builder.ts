@@ -1,7 +1,7 @@
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import { Size } from "../model/enums/size.enum.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import {Size} from "../model/enums/size.enum.js";
 import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
 import type {Component} from "../model/components/component.abstract.js";
@@ -15,6 +15,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   },
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
   ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT)
 }
 
 
@@ -42,3 +43,19 @@ function buildSlide(slideAst: any): Slide {
     []                // steps (actions)
   );
 }
+
+function dedent(text: string): string {
+  const lines = text.replace(/\t/g, "  ").split("\n");
+  // enlever lignes vides début / fin
+  while (lines.length && lines[0]!.trim() === "") lines.shift();
+  while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();
+
+  const indent = Math.min(
+      ...lines
+          .filter(l => l.trim())
+          .map(l => l.match(/^ */)![0].length)
+  );
+
+  return lines.map(l => l.slice(indent)).join("\n");
+}
+

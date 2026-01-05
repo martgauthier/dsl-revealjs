@@ -12,7 +12,7 @@ import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
 
 export class RevealVisitor implements Visitor {
-  
+
 
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
@@ -26,10 +26,19 @@ export class RevealVisitor implements Visitor {
   <title>Reveal DSL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+
   <style>
     .reveal ul {
       display: inline-block;
       text-align: left;
+    }
+    .reveal code{
+        display: inline-block;  
+        text-align: left;
+        padding:10px;
     }
   </style>
 
@@ -42,14 +51,18 @@ export class RevealVisitor implements Visitor {
   </div>
 </div>
 
+<script src="reveal.js/dist/reveal.js"></script>
 <script>
-  Reveal.initialize();
+  Reveal.initialize({
+      plugins: [ RevealHighlight ]
+    });
 </script>
 
 </body>
 </html>
     `;
   }
+
 
   visitDiapo(diapo: Diapo): void {
     for (const slide of diapo.slides) {
@@ -87,9 +100,15 @@ export class RevealVisitor implements Visitor {
   }
   visitFrameComponent(): void { }
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void { }
-  visitReplaceAction(replaceAction: ReplaceAction): void { }
-  visitDisplayAction(displayAction: DisplayAction): void { }
-  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void { }
+  visitCodeComponent(codeComponent: CodeComponent): void {
+    this.currentSlideContent.push(`
+<pre><code class="language-${codeComponent.language}">
+${codeComponent.content}
+</code></pre>
+`);
+  }
+  visitReplaceAction(replaceAction: ReplaceAction): void {}
+  visitDisplayAction(displayAction: DisplayAction): void {}
+  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
 
 }

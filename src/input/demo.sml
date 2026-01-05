@@ -10,6 +10,25 @@ diapo {
 
   }
 
+  nestedSlide {
+    slide {
+      text "Here is a nested Slide"
+    }
+
+    slide {
+      text "Here is first subSlide"
+    }
+
+    slide {
+      text "Here is a second one"
+    }
+
+    slide {
+      text "And you found Rick !"
+      video src "./assets/rick-roll.mp4" autoPlay
+    }
+  }
+
   slide {
     text "Second slide"
   }

@@ -4,7 +4,7 @@ import {Direction} from "../enums/direction.enum.js";
 import type {Visitor} from "../visitor.js";
 
 export class FrameComponent extends Component {
-    constructor(public components: Component, public direction: Direction = Direction.VERTICAL, size: Size = Size.DEFAULT) {
+    constructor(public components: Component[], public direction: Direction = Direction.VERTICAL, size: Size = Size.DEFAULT) {
         super(size);
     }
 

@@ -17,13 +17,23 @@ entry Model:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
-    slides+=Slide*
+    slides+=AbstractSlide*
   '}'
+;
+
+AbstractSlide:
+  Slide | NestedSlide
 ;
 
 Slide:
   'slide' '{'
     components+=Component*
+  '}'
+;
+
+NestedSlide:
+  'nestedSlide' '{'
+    subSlides+=Slide*
   '}'
 ;
 

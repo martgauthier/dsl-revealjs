@@ -7,6 +7,7 @@ import type { CodeHighlightAction } from "../model/actions/codehighlight-action.
 import type { DisplayAction } from "../model/actions/display-action.js";
 import type { ReplaceAction } from "../model/actions/replace-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
+import {marked} from "marked";
 
 export class RevealVisitor implements Visitor {
   
@@ -23,11 +24,19 @@ export class RevealVisitor implements Visitor {
   <title>Reveal DSL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
-  <script src="https://unpkg.com/reveal.js/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+
   <style>
     .reveal ul {
       display: inline-block;
       text-align: left;
+    }
+    .reveal code{
+        display: inline-block;  
+        text-align: left;
+        padding:10px;
     }
   </style>
 </head>
@@ -41,7 +50,9 @@ export class RevealVisitor implements Visitor {
 
 <script src="reveal.js/dist/reveal.js"></script>
 <script>
-  Reveal.initialize();
+  Reveal.initialize({
+      plugins: [ RevealHighlight ]
+    });
 </script>
 
 </body>
@@ -79,15 +90,13 @@ export class RevealVisitor implements Visitor {
   visitTemplate(): void { }
   visitCodeComponent(codeComponent: CodeComponent): void {
     this.currentSlideContent.push(`
-      <pre>
-        <code class="language-${codeComponent.language}">
-            ${codeComponent.content}
-        </code>
-      </pre>
-  `);
+<pre><code class="language-${codeComponent.language}">
+${codeComponent.content}
+</code></pre>
+`);
   }
   visitReplaceAction(replaceAction: ReplaceAction): void {}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
-  
+
 }

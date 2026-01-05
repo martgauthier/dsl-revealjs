@@ -6,8 +6,21 @@
   <title>Reveal DSL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
-  <script src="https://unpkg.com/reveal.js/plugin/highlight/highlight.js"></script>
-   
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+
+  <style>
+    .reveal ul {
+      display: inline-block;
+      text-align: left;
+    }
+    .reveal code{
+        display: inline-block;  
+        text-align: left;
+        padding:10px;
+    }
+  </style>
 </head>
 <body>
 
@@ -17,17 +30,21 @@
 <section>
   <p>Example TypeScript</p>
 
-      <pre>
-        <code class="language-typescript">
-            const x: number = 42;
-        </code>
-      </pre>
-  
+
+<pre><code class="language-typescript">
+visitDiapo(diapo: Diapo): void {
+    for (const slide of diapo.slides) {
+        slide.accept(this);
+    }
+}
+</code></pre>
+
 </section>
     
 
 <section>
   <p>Second slide</p>
+
 </section>
     
   </div>
@@ -35,7 +52,9 @@
 
 <script src="reveal.js/dist/reveal.js"></script>
 <script>
-  Reveal.initialize();
+  Reveal.initialize({
+      plugins: [ RevealHighlight ]
+    });
 </script>
 
 </body>

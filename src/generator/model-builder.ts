@@ -20,7 +20,7 @@ function buildSlide(slideAst: any): Slide {
       return new TextComponent(text, Size.DEFAULT);
     }
     else if (c.$type === "CodeComponent"){
-      return new CodeComponent(c.value, c.language, Size.DEFAULT);
+      return new CodeComponent(dedent(c.value), c.language, Size.DEFAULT);
     }
   });
 
@@ -31,3 +31,21 @@ function buildSlide(slideAst: any): Slide {
     []                // steps (actions)
   );
 }
+
+function dedent(text: string): string {
+  const lines = text.replace(/\t/g, "  ").split("\n");
+  console.log("lines", lines);
+
+  // enlever lignes vides début / fin
+  while (lines.length && lines[0]!.trim() === "") lines.shift();
+  while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();
+
+  const indent = Math.min(
+      ...lines
+          .filter(l => l.trim())
+          .map(l => l.match(/^ */)![0].length)
+  );
+
+  return lines.map(l => l.slice(indent)).join("\n");
+}
+

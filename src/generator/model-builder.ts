@@ -6,6 +6,9 @@ import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
+import {NestedSlide} from "../model/nestedSlide.js";
+import {FrameComponent} from "../model/components/frame-component.js";
+import {Direction} from "../model/enums/direction.enum.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -15,7 +18,18 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   },
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
   ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT)
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
+  FrameComponent: (ast) => {
+    const components = ast.components.map((c: any) => {
+      const builder = COMPONENT_BUILDERS[c.$type];
+      if (!builder) {
+        throw new Error(`Unknown component type: ${c.$type}`);
+      }
+      return builder(c);
+    });
+    const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
+    return new FrameComponent(components, direction, Size.DEFAULT);
+  }
 }
 
 
@@ -23,7 +37,12 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
  * Transforme l’AST Langium → modèle métier
  */
 export function buildDiapo(diapoAst: any): Diapo {
-  const slides = diapoAst.slides.map((slideAst: any) => buildSlide(slideAst));
+  const slides = diapoAst.slides.map((abstractSlideAst: any) => {
+    if(abstractSlideAst.$type === "Slide"){
+      return buildSlide(abstractSlideAst);
+    }
+    return buildNestedSlide(abstractSlideAst)
+  });
   return new Diapo(slides);
 }
 
@@ -37,11 +56,22 @@ function buildSlide(slideAst: any): Slide {
   });
 
   return new Slide(
-    undefined as any, // transitionIn 
-    undefined as any, // transitionOut 
-    components, // components
-    []                // steps (actions)
+      undefined as any, // transitionIn
+      undefined as any, // transitionOut
+      [],               // steps (actions)
+      components        // components
   );
+}
+
+function buildNestedSlide(nestedSlideAst: any): NestedSlide {
+  const subSlides = nestedSlideAst.subSlides.map((slideAst: any) => buildSlide(slideAst));
+
+  return new NestedSlide(
+      undefined as any, // transitionIn
+      undefined as any, // transitionOut
+      [],               // steps (actions)
+      subSlides         // subSlides
+  )
 }
 
 function dedent(text: string): string {

@@ -5,6 +5,10 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
+terminal DIRECTION: 
+  'vertical' | 'horizontal'
+;
+
 terminal ID:
   /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
@@ -64,8 +68,12 @@ SizeMapping:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
-    slides+=Slide*
+    slides+=AbstractSlide*
   '}'
+;
+
+AbstractSlide:
+  Slide | NestedSlide
 ;
 
 Slide:
@@ -74,8 +82,15 @@ Slide:
   '}'
 ;
 
+NestedSlide:
+  'nestedSlide' '{'
+    subSlides+=Slide*
+  '}'
+;
+
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent
+  TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent
 ;
 
 TextComponent:
@@ -94,6 +109,12 @@ CodeComponent:
     'code'
     'language' language=ID
     value=STRING
+;
+
+FrameComponent:
+  'frame' direction=DIRECTION '{'
+    components+=Component*
+  '}'
 ;
 
 hidden terminal WS: /\s+/;

@@ -94,27 +94,49 @@ Component:
 ;
 
 TextComponent:
-  'text' value=STRING
+  'text' value=STRING actionBlock=ActionBlock?
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
-  'image' src=STRING ('alt' alt=STRING)?
+  'image' src=STRING ('alt' alt=STRING)? actionBlock=ActionBlock?
 ;
 
 CodeComponent:
     'code'
     'language' language=ID
     value=STRING
+    actionBlock=ActionBlock?
 ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
+    actionBlock=ActionBlock?
   '}'
+;
+
+ActionBlock:
+  '{' actions+=Action* '}'
+;
+
+Action:
+  DisplayAction | HideAction
+;
+
+DisplayAction:
+  'display' ('in' 'step' step=INT)?
+;
+
+HideAction:
+  'hide' ('in' 'step' step=INT)?
+;
+
+terminal INT returns number:
+  /[0-9]+/
 ;
 
 hidden terminal WS: /\s+/;

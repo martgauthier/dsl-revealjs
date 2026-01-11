@@ -4,8 +4,7 @@ import { Diapo } from "../model/diapo.js";
 import { Slide } from "../model/slide.js";
 import { TextComponent } from "../model/components/text-component.js";
 import type { CodeHighlightAction } from "../model/actions/codehighlight-action.js";
-import type { DisplayAction } from "../model/actions/display-action.js";
-import type { ReplaceAction } from "../model/actions/replace-action.js";
+import { HideAction } from "../model/actions/hide-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
 import { marked } from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
@@ -13,6 +12,8 @@ import type {ImageComponent} from "../model/components/image-component.js";
 import type {NestedSlide} from "../model/nestedSlide.js";
 import type { FrameComponent } from "../model/components/frame-component.js";
 import { Direction } from "../model/enums/direction.enum.js";
+import type {Action} from "../model/actions/action.abstract.js";
+import {DisplayAction} from "../model/actions/display-action.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -126,45 +127,146 @@ export class RevealVisitor implements Visitor {
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
     const html = marked.parse(textComponent.textContent) as string;
-    this.currentSlideContent.push(html);
+
+    const fragments = this.renderFragments(
+        html,
+        textComponent.actions
+    );
+
+    this.currentSlideContent.push(fragments);
   }
 
-  visitImageComponent(imageComponent:ImageComponent): void {
-    const content = `<img src="${imageComponent.src}" alt="${imageComponent.alt ? imageComponent.alt : ""}">`
-    this.currentSlideContent.push(content);
+  visitImageComponent(imageComponent: ImageComponent): void {
+    const content = `
+    <img 
+      src="${imageComponent.src}" 
+      alt="${imageComponent.alt ?? ""}"
+    >
+  `;
+
+    const fragments = this.renderFragments(
+        content,
+        imageComponent.actions
+    );
+
+    this.currentSlideContent.push(fragments);
   }
 
-  visitVideoComponent(videoComponent:VideoComponent): void {
-    const content = `<video controls ${videoComponent.autoPlay ? "data-autoplay" : ""} src="${videoComponent.src}"></video>`;
-    this.currentSlideContent.push(content);
+  visitVideoComponent(videoComponent: VideoComponent): void {
+    const content = `
+    <video 
+      controls 
+      ${videoComponent.autoPlay ? "data-autoplay" : ""}
+      src="${videoComponent.src}">
+    </video>
+  `;
+
+    const fragments = this.renderFragments(
+        content,
+        videoComponent.actions
+    );
+
+    this.currentSlideContent.push(fragments);
   }
+  visitFrameComponent(frameComponent: FrameComponent): void {
+    const frameClass =
+        frameComponent.direction === Direction.VERTICAL
+            ? "vertical-frame"
+            : "horizontal-frame";
 
-  visitFrameComponent(FrameComponent: FrameComponent): void {
-    const frameClass = FrameComponent.direction === Direction.VERTICAL ? "vertical-frame" : "horizontal-frame";
-    let frameContent = [];
+    const frameContent: string[] = [];
 
-    for (const component of FrameComponent.components) {
+    for (const component of frameComponent.components) {
       component.accept(this);
-      frameContent.push(this.currentSlideContent.pop());
+      frameContent.push(this.currentSlideContent.pop()!);
     }
 
-    this.currentSlideContent.push(`
-      <div class="${frameClass}">
-        ${frameContent.join("\n")}
-      </div>
-    `);
+    const content = `
+    <div class="${frameClass}">
+      ${frameContent.join("\n")}
+    </div>
+  `;
+
+    const fragments = this.renderFragments(
+        content,
+        frameComponent.actions
+    );
+    this.currentSlideContent.push(fragments);
   }
+
+
 
   visitTemplate(): void { }
   visitCodeComponent(codeComponent: CodeComponent): void {
-    this.currentSlideContent.push(`
-<pre><code class="language-${codeComponent.language}">
+    const content = `
+    <pre>
+      <code class="language-${codeComponent.language}">
 ${codeComponent.content}
-</code></pre>
-`);
+      </code>
+    </pre>
+  `;
+    const fragments = this.renderFragments(
+        content,
+        codeComponent.actions
+    );
+    this.currentSlideContent.push(fragments);
   }
-  visitReplaceAction(replaceAction: ReplaceAction): void {}
-  visitDisplayAction(displayAction: DisplayAction): void {}
+
+
+  private renderFragments(
+      content: string,
+      actions: Action[]
+  ): string {
+    const display = actions.find(a => a instanceof DisplayAction);
+    const hide = actions.find(a => a instanceof HideAction);
+
+    if (!display && !hide) {
+      return content;
+    }
+
+    if (display && !hide) {
+      return `
+      <div class="fragment fade-in"
+           data-fragment-index="${display.step - 1}">
+        ${content}
+      </div>
+    `;
+    }
+
+    if (!display && hide) {
+      return `
+      <span class="fragment fade-out"
+            data-fragment-index="${hide.step - 1}">
+        ${content}
+      </span>
+    `;
+    }
+
+    // 🔐 Ici TypeScript ne sait pas encore qu’ils existent
+    // → on ajoute un guard explicite
+    if (display && hide) {
+      const displayIndex = display.step - 1;
+      const hideIndex = Math.max(
+          hide.step - 1,
+          displayIndex + 1
+      );
+
+      return `
+      <div class="fragment fade-in"
+           data-fragment-index="${displayIndex}">
+        <span class="fragment fade-out"
+              data-fragment-index="${hideIndex}">
+          ${content}
+        </span>
+      </div>
+    `;
+    }
+
+    return content;
+  }
+
   visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
+  visitDisplayAction(displayAction: DisplayAction): void {}
+  visitHideAction(hideAction: HideAction): void {}
 
 }

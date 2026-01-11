@@ -9,16 +9,19 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
+import {DisplayAction} from "../model/actions/display-action.js";
+import type {Action} from "../model/actions/action.abstract.js";
+import {HideAction} from "../model/actions/hide-action.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, Size.DEFAULT);
+    return new TextComponent(ast.value, Size.DEFAULT,buildActions(ast.actionBlock));
   },
-  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
-  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT,buildActions(ast.actionBlock)),
+  ImageComponent: (ast) => new ImageComponent(ast.src, Size.DEFAULT,buildActions(ast.actionBlock),ast.alt),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT,buildActions(ast.actionBlock)),
   FrameComponent: (ast) => {
     const components = ast.components.map((c: any) => {
       const builder = COMPONENT_BUILDERS[c.$type];
@@ -28,7 +31,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction, Size.DEFAULT);
+    return new FrameComponent(components, direction, Size.DEFAULT,buildActions(ast.actionBlock));
   }
 }
 
@@ -73,6 +76,22 @@ function buildNestedSlide(nestedSlideAst: any): NestedSlide {
       subSlides         // subSlides
   )
 }
+
+function buildActions(actionBlockAst: any): Action[] {
+  if (!actionBlockAst) return [];
+
+  return actionBlockAst.actions.map((a: any) => {
+    switch (a.$type) {
+      case "DisplayAction":
+        return new DisplayAction(a.step ?? 1);
+      case "HideAction":
+        return new HideAction(a.step ?? 1);
+      default:
+        throw new Error(`Unknown action: ${a.$type}`);
+    }
+  });
+}
+
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");

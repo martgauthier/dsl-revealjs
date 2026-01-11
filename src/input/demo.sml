@@ -1,13 +1,20 @@
 diapo {
   slide {
+      code language typescript
+  "visitDiapo(diapo: Diapo): void {
+      for (const slide of diapo.slides) {
+          slide.accept(this);
+      }
+  }"
     text "Example TypeScript"
-    code language typescript
-"visitDiapo(diapo: Diapo): void {
-    for (const slide of diapo.slides) {
-        slide.accept(this);
+    text "J'apparais en premier" {
+        display in step 1
+        hide in step 2
     }
-}"
-
+    text "J'apparais en 2eme" {
+            display in step 2
+            hide in step 3
+        }
   }
 
   nestedSlide {

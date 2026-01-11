@@ -38,7 +38,16 @@ diapo {
   }
 
   slide{
-    video "./assets/rick-roll.mp4"
+    frame vertical {
+      frame horizontal {
+        text "top left"
+        text "top right"
+      }
+      frame horizontal {
+        text "bottom left"
+        text "bottom right"
+      }
+    }
   }
 
   slide{

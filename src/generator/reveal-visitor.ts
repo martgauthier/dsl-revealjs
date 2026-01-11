@@ -11,6 +11,8 @@ import { marked } from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
 import type {NestedSlide} from "../model/nestedSlide.js";
+import type { FrameComponent } from "../model/components/frame-component.js";
+import { Direction } from "../model/enums/direction.enum.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -41,6 +43,20 @@ export class RevealVisitor implements Visitor {
         display: inline-block;  
         text-align: left;
         padding:10px;
+    }
+    
+    .vertical-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .horizontal-frame {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
     }
   </style>
 
@@ -122,7 +138,23 @@ export class RevealVisitor implements Visitor {
     const content = `<video controls ${videoComponent.autoPlay ? "data-autoplay" : ""} src="${videoComponent.src}"></video>`;
     this.currentSlideContent.push(content);
   }
-  visitFrameComponent(): void { }
+
+  visitFrameComponent(FrameComponent: FrameComponent): void {
+    const frameClass = FrameComponent.direction === Direction.VERTICAL ? "vertical-frame" : "horizontal-frame";
+    let frameContent = [];
+
+    for (const component of FrameComponent.components) {
+      component.accept(this);
+      frameContent.push(this.currentSlideContent.pop());
+    }
+
+    this.currentSlideContent.push(`
+      <div class="${frameClass}">
+        ${frameContent.join("\n")}
+      </div>
+    `);
+  }
+
   visitTemplate(): void { }
   visitCodeComponent(codeComponent: CodeComponent): void {
     this.currentSlideContent.push(`

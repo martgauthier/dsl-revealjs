@@ -10,6 +10,7 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
+import { Template } from "../model/template.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -45,7 +46,13 @@ export function buildDiapo(diapoAst: any): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
-  return new Diapo(slides);
+  let template: Template | undefined = undefined;
+  if(diapoAst.template.definition){
+    template = buildTemplateFromDefinition(diapoAst.template.definition);
+  }else if (diapoAst.template.include){
+    template = buildTemplateFromInclude(diapoAst.template.include);
+  }
+  return new Diapo(slides, template);
 }
 
 function buildSlide(slideAst: any): Slide {
@@ -91,3 +98,40 @@ function dedent(text: string): string {
   return lines.map(l => l.slice(indent)).join("\n");
 }
 
+function buildTemplateFromDefinition(templateAst: any): Template | undefined {
+  let fonts: {[htmltag: string]: string} | undefined = undefined;
+  let colors: {[htmltag: string]: string} | undefined = undefined;
+  let fontSizes: {[htmltag: string]: string} | undefined = undefined;
+  let dimensions: {[htmltag: string]: Size} | undefined = undefined;
+  let background: string | undefined = undefined;
+  let header: Component | undefined = undefined;
+  let footer: Component | undefined = undefined;
+  let builder: ComponentBuilder | undefined;
+  for (const section of templateAst.sections) {
+    switch (section.$type) { 
+      case "Temp_Background":
+        background = section.backgroundValue;
+        break;
+      case "Temp_Header":
+        builder = COMPONENT_BUILDERS[section.value.$type];
+        if (!builder) {
+          throw new Error(`Unknown component type: ${section.value.$type}`);
+        }
+        header = builder(section.value);
+        break;
+      case "Temp_Footer":
+        builder = COMPONENT_BUILDERS[section.value.$type];
+        if (!builder) {
+          throw new Error(`Unknown component type: ${section.value.$type}`);
+        }
+        footer = builder(section.value);
+        break;
+    }
+  }
+  return new Template(fonts, colors, fontSizes, dimensions, background, header, footer);
+}
+
+function buildTemplateFromInclude(templateIncludeAst: any): undefined {
+    //TODO: Return template from reading file (source path = templateIncludeAst)
+    return undefined;
+}

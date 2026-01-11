@@ -31,7 +31,6 @@ StringBinding:
 
 // ===== ENTRY =====
 entry Model:
-  (template=Template)?
   diapo=Diapo
 ;
 
@@ -77,6 +76,7 @@ SizeMapping:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
+    template=Template?
     slides+=AbstractSlide*
   '}'
 ;

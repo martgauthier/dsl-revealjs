@@ -1,4 +1,14 @@
 diapo {
+  use template {
+    header {
+      text "RevealJS DSL Demo"
+    }
+    footer {
+      text  "template footer"
+    }
+    background => "yellow"
+  }
+
   slide {
     text "# Hi there !"
     text "Here is a RevealJS presentation written with our own DSL !"

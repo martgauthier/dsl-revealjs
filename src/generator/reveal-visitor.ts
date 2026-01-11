@@ -14,6 +14,7 @@ import type {NestedSlide} from "../model/nestedSlide.js";
 import type { FrameComponent } from "../model/components/frame-component.js";
 import { Direction } from "../model/enums/direction.enum.js";
 import type { LatexComponent } from "../model/components/latex-component.js";
+import type { Template } from "../model/template.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -21,6 +22,10 @@ export class RevealVisitor implements Visitor {
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
+  hasTemplate: boolean = false;
+  templateStyle: string = "";
+  templateHeader: string = "";
+  templateFooter: string = "";
 
   getResult(): string {
     return `
@@ -60,6 +65,7 @@ export class RevealVisitor implements Visitor {
       align-items: center;
       gap: 10px;
     }
+    ${this.templateStyle}
   </style>
 
 </head>
@@ -105,6 +111,9 @@ export class RevealVisitor implements Visitor {
   }
 
   visitDiapo(diapo: Diapo): void {
+    if(diapo.template){
+      diapo.template.accept(this);
+    }
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;
       slide.accept(this);
@@ -120,8 +129,10 @@ export class RevealVisitor implements Visitor {
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section>
+              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+                ${this.templateHeader}
                 ${this.currentSlideContent.join("\n")}
+                ${this.templateFooter}
               </section>`
           );
     }
@@ -135,8 +146,10 @@ export class RevealVisitor implements Visitor {
     for (const subslide of nestedSlide.subSlides) {
       subslide.accept(this);
       const subSlideContent =
-          `<section>
+          `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+            ${this.templateHeader}
             ${this.currentSlideContent.join("\n")}
+            ${this.templateFooter}
           </section>`;
       nestedSlidesContent.push(subSlideContent);
     }
@@ -178,7 +191,44 @@ export class RevealVisitor implements Visitor {
     `);
   }
 
-  visitTemplate(): void { }
+  visitTemplate(template: Template): void {
+    this.hasTemplate = true;
+    let templateStyle = "";
+    if(template.fonts){
+      for(const tag in template.fonts){
+        templateStyle += `${tag} { font-family: ${template.fonts[tag]}; }\n`;
+      }
+    }
+    if(template.colors){
+      for(const tag in template.colors){
+        templateStyle += `${tag} { color: ${template.colors[tag]}; }\n`;
+      }
+    }
+    if(template.fontSizes){
+      for(const tag in template.fontSizes){
+        templateStyle += `${tag} { font-size: ${template.fontSizes[tag]}; }\n`;
+      }
+    }
+    if(template.dimensions){
+      for(const tag in template.dimensions){
+        let sizeValue = template.dimensions[tag]?.valueOf;
+        templateStyle += `${tag} { width: ${sizeValue}; height: ${sizeValue}; }\n`;
+      }
+    }
+    if(template.background){
+      templateStyle += `.slide { background: ${template.background}; }\n`;
+    }
+    this.templateStyle = templateStyle;
+
+    if(template.header){
+      template.header.accept(this);
+      this.templateHeader = this.currentSlideContent.pop() || "";
+    }if(template.footer){
+      template.footer.accept(this);
+      this.templateFooter = this.currentSlideContent.pop() || "";
+    }
+   }
+
   visitCodeComponent(codeComponent: CodeComponent): void {
     this.currentSlideContent.push(`
 <pre><code class="language-${codeComponent.language}">

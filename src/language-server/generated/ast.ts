@@ -20,6 +20,7 @@ export type DslRevealJsKeywordNames =
     | "diapo"
     | "image"
     | "language"
+    | "nestedSlide"
     | "slide"
     | "text"
     | "video"
@@ -27,6 +28,16 @@ export type DslRevealJsKeywordNames =
     | "}";
 
 export type DslRevealJsTokenNames = DslRevealJsTerminalNames | DslRevealJsKeywordNames;
+
+export type AbstractSlide = NestedSlide | Slide;
+
+export const AbstractSlide = {
+    $type: 'AbstractSlide'
+} as const;
+
+export function isAbstractSlide(item: unknown): item is AbstractSlide {
+    return reflection.isInstance(item, AbstractSlide.$type);
+}
 
 export interface CodeComponent extends langium.AstNode {
     readonly $container: Slide;
@@ -58,7 +69,7 @@ export function isComponent(item: unknown): item is Component {
 export interface Diapo extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'Diapo';
-    slides: Array<Slide>;
+    slides: Array<AbstractSlide>;
 }
 
 export const Diapo = {
@@ -101,8 +112,23 @@ export function isModel(item: unknown): item is Model {
     return reflection.isInstance(item, Model.$type);
 }
 
-export interface Slide extends langium.AstNode {
+export interface NestedSlide extends langium.AstNode {
     readonly $container: Diapo;
+    readonly $type: 'NestedSlide';
+    subSlides: Array<Slide>;
+}
+
+export const NestedSlide = {
+    $type: 'NestedSlide',
+    subSlides: 'subSlides'
+} as const;
+
+export function isNestedSlide(item: unknown): item is NestedSlide {
+    return reflection.isInstance(item, NestedSlide.$type);
+}
+
+export interface Slide extends langium.AstNode {
+    readonly $container: Diapo | NestedSlide;
     readonly $type: 'Slide';
     components: Array<Component>;
 }
@@ -149,11 +175,13 @@ export function isVideoComponent(item: unknown): item is VideoComponent {
 }
 
 export type DslRevealJsAstType = {
+    AbstractSlide: AbstractSlide
     CodeComponent: CodeComponent
     Component: Component
     Diapo: Diapo
     ImageComponent: ImageComponent
     Model: Model
+    NestedSlide: NestedSlide
     Slide: Slide
     TextComponent: TextComponent
     VideoComponent: VideoComponent
@@ -161,6 +189,12 @@ export type DslRevealJsAstType = {
 
 export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
     override readonly types = {
+        AbstractSlide: {
+            name: AbstractSlide.$type,
+            properties: {
+            },
+            superTypes: []
+        },
         CodeComponent: {
             name: CodeComponent.$type,
             properties: {
@@ -210,6 +244,16 @@ export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        NestedSlide: {
+            name: NestedSlide.$type,
+            properties: {
+                subSlides: {
+                    name: NestedSlide.subSlides,
+                    defaultValue: []
+                }
+            },
+            superTypes: [AbstractSlide.$type]
+        },
         Slide: {
             name: Slide.$type,
             properties: {
@@ -218,7 +262,7 @@ export class DslRevealJsAstReflection extends langium.AbstractAstReflection {
                     defaultValue: []
                 }
             },
-            superTypes: []
+            superTypes: [AbstractSlide.$type]
         },
         TextComponent: {
             name: TextComponent.$type,

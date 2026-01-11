@@ -6,6 +6,7 @@ import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
+import {NestedSlide} from "../model/nestedSlide.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -23,7 +24,12 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
  * Transforme l’AST Langium → modèle métier
  */
 export function buildDiapo(diapoAst: any): Diapo {
-  const slides = diapoAst.slides.map((slideAst: any) => buildSlide(slideAst));
+  const slides = diapoAst.slides.map((abstractSlideAst: any) => {
+    if(abstractSlideAst.$type === "Slide"){
+      return buildSlide(abstractSlideAst);
+    }
+    return buildNestedSlide(abstractSlideAst)
+  });
   return new Diapo(slides);
 }
 
@@ -37,11 +43,22 @@ function buildSlide(slideAst: any): Slide {
   });
 
   return new Slide(
-    undefined as any, // transitionIn 
-    undefined as any, // transitionOut 
-    components, // components
-    []                // steps (actions)
+      undefined as any, // transitionIn
+      undefined as any, // transitionOut
+      [],               // steps (actions)
+      components        // components
   );
+}
+
+function buildNestedSlide(nestedSlideAst: any): NestedSlide {
+  const subSlides = nestedSlideAst.subSlides.map((slideAst: any) => buildSlide(slideAst));
+
+  return new NestedSlide(
+      undefined as any, // transitionIn
+      undefined as any, // transitionOut
+      [],               // steps (actions)
+      subSlides         // subSlides
+  )
 }
 
 function dedent(text: string): string {

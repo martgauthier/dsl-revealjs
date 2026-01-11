@@ -160,6 +160,32 @@ export const SlideMLGrammar = (): Grammar => loadedSlideMLGrammar ?? (loadedSlid
     },
     {
       "$type": "ParserRule",
+      "name": "AbstractSlide",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@5"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@6"
+            },
+            "arguments": []
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
       "name": "Slide",
       "definition": {
         "$type": "Group",
@@ -175,6 +201,43 @@ export const SlideMLGrammar = (): Grammar => loadedSlideMLGrammar ?? (loadedSlid
           {
             "$type": "Assignment",
             "feature": "components",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@7"
+              },
+              "arguments": []
+            },
+            "cardinality": "*"
+          },
+          {
+            "$type": "Keyword",
+            "value": "}"
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "NestedSlide",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Keyword",
+            "value": "nestedSlide"
+          },
+          {
+            "$type": "Keyword",
+            "value": "{"
+          },
+          {
+            "$type": "Assignment",
+            "feature": "subSlides",
             "operator": "+=",
             "terminal": {
               "$type": "RuleCall",
@@ -204,20 +267,6 @@ export const SlideMLGrammar = (): Grammar => loadedSlideMLGrammar ?? (loadedSlid
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@6"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@7"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@8"
             },
             "arguments": []
@@ -226,6 +275,20 @@ export const SlideMLGrammar = (): Grammar => loadedSlideMLGrammar ?? (loadedSlid
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@9"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@10"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@11"
             },
             "arguments": []
           }

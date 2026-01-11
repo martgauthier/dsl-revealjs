@@ -10,12 +10,14 @@ import type { CodeComponent } from "../model/components/code-component.js";
 import { marked } from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
+import type {NestedSlide} from "../model/nestedSlide.js";
 
 export class RevealVisitor implements Visitor {
 
 
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
+  private isNestedSlide: boolean = false;
 
   getResult(): string {
     return `
@@ -66,6 +68,7 @@ export class RevealVisitor implements Visitor {
 
   visitDiapo(diapo: Diapo): void {
     for (const slide of diapo.slides) {
+      this.isNestedSlide = false;
       slide.accept(this);
     }
   }
@@ -77,11 +80,32 @@ export class RevealVisitor implements Visitor {
       component.accept(this);
     }
 
-    this.slidesHtml.push(`
-<section>
-  ${this.currentSlideContent.join("\n")}
-</section>
-    `);
+    if(!this.isNestedSlide){
+          this.slidesHtml.push(
+              `<section>
+                ${this.currentSlideContent.join("\n")}
+              </section>`
+          );
+    }
+
+  }
+
+  visitNestedSlide(nestedSlide: NestedSlide) {
+    this.isNestedSlide = true;
+    let nestedSlidesContent = [];
+
+    for (const subslide of nestedSlide.subSlides) {
+      subslide.accept(this);
+      const subSlideContent =
+          `<section>
+            ${this.currentSlideContent.join("\n")}
+          </section>`;
+      nestedSlidesContent.push(subSlideContent);
+    }
+    this.slidesHtml.push(
+        `<section>
+          ${nestedSlidesContent.join("\n")}
+        </section>`);
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {

@@ -3,20 +3,20 @@ import type {Component} from "./components/component.abstract.js";
 import type {Action} from "./actions/action.abstract.js";
 import type {Visitable} from "./visitable.interface.js";
 import type {Visitor} from "./visitor.js";
-import type {NestedSlide} from "./nestedSlide.js";
 import {AbstractSlide} from "./AbstractSlide.js";
+import type {Slide} from "./slide.js";
 
-export class Slide extends AbstractSlide implements Visitable {
+export class NestedSlide extends AbstractSlide implements Visitable {
     constructor(
         public transitionIn: Transition,
         public transitionOut: Transition,
         public steps: Action[][],
-        public components: Component[],
-        ){
+        public subSlides: Slide[]
+    ){
         super(transitionIn, transitionOut, steps);
     }
 
     accept(visitor: Visitor): void {
-        visitor.visitSlide(this);
+        visitor.visitNestedSlide(this);
     }
 }

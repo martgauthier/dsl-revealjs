@@ -17,11 +17,15 @@ diapo {
 }
 
 ```
-Génerer le parseur + Génerer le html ( index.html à la racine )
+Génerer le parseur (uniquement quand on touche à la grammaire)
+
+```
+npm run generate
+```
+Generer le index.html
 ```
 npm start
 ```
-
 Structure du projet:
 ```
 dsl-revealjs/

@@ -1,9 +1,14 @@
 grammar SlideML
 
 // ===== TERMINALS =====
+terminal ML_STRING: 
+  '"""' -> '"""'
+;
+
 terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
+
 
 terminal DIRECTION: 
   'vertical' | 'horizontal'
@@ -17,6 +22,10 @@ terminal SizeEnum:
   'XS' | 'S'  | 'M' | 'L' | 'XL';
 
 // ===== UTILITIES =====
+StringValue returns string:
+  STRING | ML_STRING
+;
+
 StringBinding:
   key=STRING '=>' value=STRING;
 
@@ -76,25 +85,25 @@ AbstractSlide:
   Slide | NestedSlide
 ;
 
-Slide:
-  'slide' '{'
-    components+=Component*
-  '}'
-;
-
 NestedSlide:
   'nestedSlide' '{'
     subSlides+=Slide*
   '}'
 ;
 
+Slide:
+  'slide' '{'
+    components+=Component*
+  '}'
+;
+
 Component:
   TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent
+  FrameComponent | LatexComponent
 ;
 
 TextComponent:
-  'text' value=STRING
+  'text' value=StringValue
 ;
 
 VideoComponent:
@@ -106,15 +115,19 @@ ImageComponent:
 ;
 
 CodeComponent:
-    'code'
-    'language' language=ID
-    value=STRING
+  'code'
+  'language' language=ID
+  value=STRING
 ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
   '}'
+;
+
+LatexComponent:
+  'latex' formula=StringValue
 ;
 
 hidden terminal WS: /\s+/;

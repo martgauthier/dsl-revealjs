@@ -4,6 +4,7 @@ import {TextComponent} from "../model/components/text-component.js";
 import {Size} from "../model/enums/size.enum.js";
 import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
+import { LatexComponent } from "../model/components/latex-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
@@ -29,7 +30,8 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
     return new FrameComponent(components, direction, Size.DEFAULT);
-  }
+  },
+  LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT)
 }
 
 

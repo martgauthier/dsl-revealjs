@@ -10,13 +10,17 @@ import type { CodeComponent } from "../model/components/code-component.js";
 import { marked } from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
+import type {NestedSlide} from "../model/nestedSlide.js";
+import type { FrameComponent } from "../model/components/frame-component.js";
+import { Direction } from "../model/enums/direction.enum.js";
 import type { LatexComponent } from "../model/components/latex-component.js";
 
 export class RevealVisitor implements Visitor {
-  
+
 
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
+  private isNestedSlide: boolean = false;
 
   getResult(): string {
     return `
@@ -28,10 +32,33 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+
   <style>
     .reveal ul {
       display: inline-block;
       text-align: left;
+    }
+    .reveal code{
+        display: inline-block;  
+        text-align: left;
+        padding:10px;
+    }
+    
+    .vertical-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .horizontal-frame {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
     }
   </style>
 
@@ -44,8 +71,11 @@ export class RevealVisitor implements Visitor {
   </div>
 </div>
 
+<script src="reveal.js/dist/reveal.js"></script>
 <script>
-  Reveal.initialize();
+  Reveal.initialize({
+      plugins: [ RevealHighlight ]
+    });
 </script>
 
 </body>
@@ -76,6 +106,7 @@ export class RevealVisitor implements Visitor {
 
   visitDiapo(diapo: Diapo): void {
     for (const slide of diapo.slides) {
+      this.isNestedSlide = false;
       slide.accept(this);
     }
   }
@@ -87,11 +118,32 @@ export class RevealVisitor implements Visitor {
       component.accept(this);
     }
 
-    this.slidesHtml.push(`
-<section>
-  ${this.currentSlideContent.join("\n")}
-</section>
-    `);
+    if(!this.isNestedSlide){
+          this.slidesHtml.push(
+              `<section>
+                ${this.currentSlideContent.join("\n")}
+              </section>`
+          );
+    }
+
+  }
+
+  visitNestedSlide(nestedSlide: NestedSlide) {
+    this.isNestedSlide = true;
+    let nestedSlidesContent = [];
+
+    for (const subslide of nestedSlide.subSlides) {
+      subslide.accept(this);
+      const subSlideContent =
+          `<section>
+            ${this.currentSlideContent.join("\n")}
+          </section>`;
+      nestedSlidesContent.push(subSlideContent);
+    }
+    this.slidesHtml.push(
+        `<section>
+          ${nestedSlidesContent.join("\n")}
+        </section>`);
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
@@ -109,12 +161,34 @@ export class RevealVisitor implements Visitor {
     const content = `<video controls ${videoComponent.autoPlay ? "data-autoplay" : ""} src="${videoComponent.src}"></video>`;
     this.currentSlideContent.push(content);
   }
-  visitFrameComponent(): void { }
+
+  visitFrameComponent(FrameComponent: FrameComponent): void {
+    const frameClass = FrameComponent.direction === Direction.VERTICAL ? "vertical-frame" : "horizontal-frame";
+    let frameContent = [];
+
+    for (const component of FrameComponent.components) {
+      component.accept(this);
+      frameContent.push(this.currentSlideContent.pop());
+    }
+
+    this.currentSlideContent.push(`
+      <div class="${frameClass}">
+        ${frameContent.join("\n")}
+      </div>
+    `);
+  }
+
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void { }
-  visitReplaceAction(replaceAction: ReplaceAction): void { }
-  visitDisplayAction(displayAction: DisplayAction): void { }
-  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void { }
+  visitCodeComponent(codeComponent: CodeComponent): void {
+    this.currentSlideContent.push(`
+<pre><code class="language-${codeComponent.language}">
+${codeComponent.content}
+</code></pre>
+`);
+  }
+  visitReplaceAction(replaceAction: ReplaceAction): void {}
+  visitDisplayAction(displayAction: DisplayAction): void {}
+  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
   visitLatexComponent(latexComponent: LatexComponent): void {
     const formula = this.normalizeMultiline(latexComponent.formula);
     this.currentSlideContent.push(`

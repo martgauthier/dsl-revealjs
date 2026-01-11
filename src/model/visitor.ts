@@ -9,6 +9,7 @@ import type {CodeComponent} from "./components/code-component.js";
 import type {ReplaceAction} from "./actions/replace-action.js";
 import type {DisplayAction} from "./actions/display-action.js";
 import type {CodeHighlightAction} from "./actions/codehighlight-action.js";
+import type { NestedSlide } from "./nestedSlide.js";
 import type { LatexComponent } from "./components/latex-component.js";
 
 export interface Visitor {
@@ -17,6 +18,8 @@ export interface Visitor {
     visitVideoComponent(videoComponent: VideoComponent): void;
 
     visitSlide(slide: Slide): void;
+
+    visitNestedSlide(subSlide: NestedSlide): void;
 
     visitDiapo(diapo: Diapo): void;
 

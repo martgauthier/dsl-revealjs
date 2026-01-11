@@ -7,6 +7,8 @@ import {ImageComponent} from "../model/components/image-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
+import {FrameComponent} from "../model/components/frame-component.js";
+import {Direction} from "../model/enums/direction.enum.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -16,7 +18,18 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   },
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
   ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT)
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
+  FrameComponent: (ast) => {
+    const components = ast.components.map((c: any) => {
+      const builder = COMPONENT_BUILDERS[c.$type];
+      if (!builder) {
+        throw new Error(`Unknown component type: ${c.$type}`);
+      }
+      return builder(c);
+    });
+    const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
+    return new FrameComponent(components, direction, Size.DEFAULT);
+  }
 }
 
 

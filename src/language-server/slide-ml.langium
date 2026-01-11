@@ -5,6 +5,10 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
+terminal DIRECTION: 
+  'vertical' | 'horizontal'
+;
+
 terminal ID:
   /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
@@ -38,7 +42,8 @@ NestedSlide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent
+  TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent
 ;
 
 TextComponent:
@@ -57,4 +62,10 @@ CodeComponent:
     'code'
     'language' language=ID
     value=STRING
+;
+
+FrameComponent:
+  'frame' direction=DIRECTION '{'
+    components+=Component*
+  '}'
 ;

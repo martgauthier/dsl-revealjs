@@ -9,13 +9,8 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
-
 terminal DIRECTION: 
   'vertical' | 'horizontal'
-;
-
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
 
 terminal SizeEnum:
@@ -26,8 +21,8 @@ StringValue returns string:
   STRING | ML_STRING
 ;
 
-StringBinding:
-  key=STRING '=>' value=STRING;
+UnquotedStringBinding:
+  key=UNQUOTED_NO_SPACES ARROW value=UNQUOTED_NO_SPACES;
 
 // ===== ENTRY =====
 entry Model:
@@ -36,7 +31,7 @@ entry Model:
 
 
 // ===== TEMPLATE ======
-Template:
+TemplateDefinitionOrInclude:
   'use' 'template' (definition=TemplateDefinition | include=TemplateInclude);
 
 TemplateInclude:
@@ -60,23 +55,23 @@ Temp_Header: 'header' '{' value=Component '}';
 
 Temp_Footer: 'footer' '{' value=Component '}';
 
-Temp_Fonts: 'fonts' '{' fontMappings+=StringBinding* '}';
+Temp_Fonts: 'fonts' '{' fontMappings+=UnquotedStringBinding+ '}';
 
-Temp_Colors: 'colors' '{' colorMappings+=StringBinding* '}';
+Temp_Colors: 'colors' '{' colorMappings+=UnquotedStringBinding+ '}';
 
-Temp_Background: 'background' '=>' backgroundValue=STRING;
+Temp_Background: 'background' ARROW backgroundValue=STRING;
 
-Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=StringBinding* '}';
+Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
 
-Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping* '}';
+Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 
 SizeMapping:
-  key=STRING '=>' value=SizeEnum;
+  key=STRING ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
-    template=Template?
+    template=TemplateDefinitionOrInclude?
     slides+=AbstractSlide*
   '}'
 ;
@@ -116,7 +111,7 @@ ImageComponent:
 
 CodeComponent:
   'code'
-  'language' language=ID
+  'language' language=UNQUOTED_NO_SPACES
   value=STRING
 ;
 
@@ -131,5 +126,11 @@ LatexComponent:
 ;
 
 hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
+
+terminal ARROW:
+  '=>';
+terminal UNQUOTED_NO_SPACES:
+  /[^\s\r\n]+/;

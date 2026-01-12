@@ -6,7 +6,14 @@ diapo {
     footer {
       text  "template footer"
     }
-    background => "yellow"
+    colors {
+      p => yellow
+      h1 => red
+    }
+    fonts => {
+      p => Arial
+      h1 => serif
+    }
   }
 
   slide {

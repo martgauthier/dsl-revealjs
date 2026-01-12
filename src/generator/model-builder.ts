@@ -35,6 +35,40 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT)
 }
 
+const TEMPLATE_BUILDERS : Record<string, any> = {
+  "Temp_Header": (section: any, template: Template) => {
+    const builder = COMPONENT_BUILDERS[section.value.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${section.value.$type}`);
+    }
+    template.header = builder(section.value);
+  },
+  "Temp_Footer": (section: any, template: Template) => {
+    const builder = COMPONENT_BUILDERS[section.value.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${section.value.$type}`);
+    }
+    template.footer = builder(section.value);
+  },
+  "Temp_Background": (section: any, template: Template) => {
+    template.background = section.backgroundValue;
+  },
+  "Temp_Colors": (section: any, template: Template) => {
+    let colors: Record<any, any> = {};
+    section.colorMappings.forEach((pair: any) => {
+      colors[pair.key] = pair.value;
+    });
+    template.colors = colors;
+    console.log("Template colors:", template.colors);
+  },
+  "Temp_Fonts": (section: any, template: Template) => {
+    let fonts: Record<any, any> = {};
+    section.fontMappings.forEach((pair: any) => {
+      fonts[pair.key] = pair.value;
+    });
+    template.fonts = fonts;
+  }
+}
 
 /**
  * Transforme l’AST Langium → modèle métier
@@ -99,36 +133,13 @@ function dedent(text: string): string {
 }
 
 function buildTemplateFromDefinition(templateAst: any): Template | undefined {
-  let fonts: {[htmltag: string]: string} | undefined = undefined;
-  let colors: {[htmltag: string]: string} | undefined = undefined;
-  let fontSizes: {[htmltag: string]: string} | undefined = undefined;
-  let dimensions: {[htmltag: string]: Size} | undefined = undefined;
-  let background: string | undefined = undefined;
-  let header: Component | undefined = undefined;
-  let footer: Component | undefined = undefined;
-  let builder: ComponentBuilder | undefined;
+  let template = new Template();
+
   for (const section of templateAst.sections) {
-    switch (section.$type) { 
-      case "Temp_Background":
-        background = section.backgroundValue;
-        break;
-      case "Temp_Header":
-        builder = COMPONENT_BUILDERS[section.value.$type];
-        if (!builder) {
-          throw new Error(`Unknown component type: ${section.value.$type}`);
-        }
-        header = builder(section.value);
-        break;
-      case "Temp_Footer":
-        builder = COMPONENT_BUILDERS[section.value.$type];
-        if (!builder) {
-          throw new Error(`Unknown component type: ${section.value.$type}`);
-        }
-        footer = builder(section.value);
-        break;
-    }
+    TEMPLATE_BUILDERS[section.$type](section, template);
   }
-  return new Template(fonts, colors, fontSizes, dimensions, background, header, footer);
+  
+  if(templateAst.sections) return template;
 }
 
 function buildTemplateFromInclude(templateIncludeAst: any): undefined {

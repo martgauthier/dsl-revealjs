@@ -14,9 +14,6 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
-terminal SizeEnum:
-  'XS' | 'S'  | 'M' | 'L' | 'XL';
-
 // ===== UTILITIES =====
 StringValue returns string:
   STRING | ML_STRING
@@ -71,6 +68,10 @@ SizeMapping:
   key=STRING '=>' value=SizeEnum;
 
 // ===== STRUCTURE =====
+
+SizeEnum returns string:
+  'XL' | 'L' | 'M' | 'S' | 'XS'
+;
 Diapo:
   'diapo' '{'
     annotationsEnabled=AnnotationsEnabled?
@@ -96,8 +97,8 @@ Slide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent | TitleComponent
+  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
 ;
 
 TextComponent:

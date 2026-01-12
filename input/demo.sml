@@ -1,8 +1,9 @@
 diapo {
   enable annotations
+
   slide {
-    title "Hsi there !"
-    text "Here is a RevealJS presentation written with our own DSL !"
+    title "Hi there !" 'XS'
+    text "Here is a RevealJS presentation written with our own DSL !" 'L'
   }
 
   nestedSlide {
@@ -23,6 +24,7 @@ diapo {
       video src "./assets/rick-roll.mp4" autoPlay
     }
   }
+
 
   slide{
     text "You can make layouts"

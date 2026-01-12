@@ -124,7 +124,7 @@ ActionBlock:
 ;
 
 Action:
-  DisplayAction | HideAction
+  DisplayAction | HideAction | HighlightAction
 ;
 
 DisplayAction:
@@ -133,6 +133,14 @@ DisplayAction:
 
 HideAction:
   'hide' ('in' 'step' step=INT)?
+;
+
+HighlightAction:
+  'highlight' 'lines' range=LineRange ('in' 'step' step=INT)?
+;
+
+LineRange:
+  start=INT ('-' end=INT)?
 ;
 
 terminal INT returns number:

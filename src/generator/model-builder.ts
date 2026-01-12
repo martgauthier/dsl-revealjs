@@ -12,6 +12,7 @@ import {Direction} from "../model/enums/direction.enum.js";
 import {DisplayAction} from "../model/actions/display-action.js";
 import type {Action} from "../model/actions/action.abstract.js";
 import {HideAction} from "../model/actions/hide-action.js";
+import {HighlightAction} from "../model/actions/highlight-action.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -86,6 +87,16 @@ function buildActions(actionBlockAst: any): Action[] {
         return new DisplayAction(a.step ?? 1);
       case "HideAction":
         return new HideAction(a.step ?? 1);
+      case "HighlightAction": {
+        const start = a.range.start;
+        const end = a.range.end ?? start;
+        return new HighlightAction(
+            a.step ?? 1,
+            start,
+            end
+        );
+      }
+
       default:
         throw new Error(`Unknown action: ${a.$type}`);
     }

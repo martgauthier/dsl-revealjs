@@ -3,7 +3,7 @@ import type { Visitor } from "../model/visitor.js";
 import { Diapo } from "../model/diapo.js";
 import { Slide } from "../model/slide.js";
 import { TextComponent } from "../model/components/text-component.js";
-import type { CodeHighlightAction } from "../model/actions/codehighlight-action.js";
+import { HighlightAction } from "../model/actions/highlight-action.js";
 import { HideAction } from "../model/actions/hide-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
 import { marked } from "marked";
@@ -27,40 +27,75 @@ export class RevealVisitor implements Visitor {
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Reveal DSL</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+    <meta charset="utf-8">
+    <title>Reveal DSL</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-
-  <style>
-    .reveal ul {
-      display: inline-block;
-      text-align: left;
-    }
-    .reveal code{
-        display: inline-block;  
-        text-align: left;
-        padding:10px;
-    }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
     
-    .vertical-frame {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    
+    <style>
+        :root {
+            --r-block-margin: 20px;
+            --r-code-font: monospace;
+        }
+        .reveal ul {
+          display: inline-block;
+          text-align: left;
+        }
+       
+        .vertical-frame {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+    
+        .horizontal-frame {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-items: center;
+          gap: 10px;
+        }
+        
+        .reveal pre {
+            display: block;
+            position: relative;
+            width: 90%;
+            margin: var(--r-block-margin) auto;
+            text-align: left;
+            font-size: 1em;
+            font-family: var(--r-code-font);
+            line-height: 1.2em;
+            word-wrap: break-word;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
 
-    .horizontal-frame {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-    }
-  </style>
+        .reveal code {
+            font-family: var(--r-code-font);
+            text-transform: none;
+            tab-size: 2;
+        }
 
+        .reveal pre code {
+            display: block;
+            padding: 5px;
+            overflow: auto;
+            max-height: 400px;
+            word-wrap: normal;
+        }
+
+        .reveal .code-wrapper {
+            white-space: normal;
+        }
+
+        .reveal .code-wrapper code {
+            white-space: pre;
+        }
+    </style>
 </head>
 <body>
 
@@ -70,13 +105,17 @@ export class RevealVisitor implements Visitor {
   </div>
 </div>
 
-<script src="reveal.js/dist/reveal.js"></script>
+<!-- Reveal JS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+
 <script>
-  Reveal.initialize({
-      plugins: [ RevealHighlight ]
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        plugins: [ RevealHighlight ]
     });
 </script>
-
 </body>
 </html>
     `;
@@ -198,18 +237,50 @@ export class RevealVisitor implements Visitor {
 
   visitTemplate(): void { }
   visitCodeComponent(codeComponent: CodeComponent): void {
+
+    const highlights = codeComponent.actions
+        .filter(a => a instanceof HighlightAction)
+        .sort((a, b) => a.step - b.step) as HighlightAction[];
+
+    let highlights2 = highlights;
+    const dataLineNumbers = highlights.map(h => {
+      if (h.startLine === h.endLine) {
+        return `${h.startLine}`;
+      }
+      return `${h.startLine}-${h.endLine}`;
+    });
+
+    const dataLineNumbersJoined =
+        dataLineNumbers.length > 0
+            ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
+            : "";
+    console.log("highlights2 : ", highlights2);
+    const dataFragmentIndexes = highlights2.map(h => {
+      return h.step-1;
+    });
+    const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
+        ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
+        : "";
+    console.log("dataFrag : ", dataFragmentIndexes);
     const content = `
-    <pre>
-      <code class="language-${codeComponent.language}">
+<pre>
+  <code class="language-${codeComponent.language}"
+        data-trim
+        ${dataLineNumbersJoined} ${dataFragmentIndexesJoined}>
 ${codeComponent.content}
-      </code>
-    </pre>
-  `;
-    const fragments = this.renderFragments(
-        content,
-        codeComponent.actions
+  </code>
+</pre>
+`;
+
+    const display = codeComponent.actions.find(a => a instanceof DisplayAction);
+    const hide = codeComponent.actions.find(a => a instanceof HideAction);
+
+    this.currentSlideContent.push(
+        this.renderFragments(
+            content,
+            [display, hide].filter(Boolean) as Action[]
+        )
     );
-    this.currentSlideContent.push(fragments);
   }
 
 
@@ -242,8 +313,6 @@ ${codeComponent.content}
     `;
     }
 
-    // 🔐 Ici TypeScript ne sait pas encore qu’ils existent
-    // → on ajoute un guard explicite
     if (display && hide) {
       const displayIndex = display.step - 1;
       const hideIndex = Math.max(
@@ -265,7 +334,7 @@ ${codeComponent.content}
     return content;
   }
 
-  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
+  visitCodeHighlightAction(codeHighlightAction: HighlightAction): void {}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
 

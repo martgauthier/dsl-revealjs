@@ -8,7 +8,7 @@ import type {FrameComponent} from "./components/frame-component.js";
 import type {CodeComponent} from "./components/code-component.js";
 import type {HideAction} from "./actions/hide-action.js";
 import type {DisplayAction} from "./actions/display-action.js";
-import type {CodeHighlightAction} from "./actions/codehighlight-action.js";
+import type {HighlightAction} from "./actions/highlight-action.js";
 import type { NestedSlide } from "./nestedSlide.js";
 
 export interface Visitor {
@@ -34,5 +34,5 @@ export interface Visitor {
 
     visitDisplayAction(displayAction: DisplayAction): void;
 
-    visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void;
+    visitCodeHighlightAction(codeHighlightAction: HighlightAction): void;
 }

@@ -24,6 +24,7 @@ diapo {
     }
   }
 
+
   slide{
     text "You can make layouts"
     frame vertical {

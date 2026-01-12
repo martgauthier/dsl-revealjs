@@ -3,6 +3,25 @@ import { URI } from "langium";
 import { createSlideMLServices } from "./language-server/slide-ml-module.js";
 import { buildDiapo } from "./generator/model-builder.js";
 import { RevealVisitor } from "./generator/reveal-visitor.js";
+import path from "path";
+import { AssetResolver } from "./generator/asset-resolver.js";
+
+async function resolveAssets(diapo: any, outputDir: string) {
+    const resolver = new AssetResolver(outputDir);
+
+    for (const slide of diapo.slides) {
+        const slides =
+            "subSlides" in slide ? slide.subSlides : [slide];
+
+        for (const s of slides) {
+            for (const component of s.components) {
+                if ("src" in component && typeof component.src === "string") {
+                    component.src = await resolver.resolve(component.src);
+                }
+            }
+        }
+    }
+}
 
 // Créer Langium
 const { shared } = createSlideMLServices();
@@ -28,6 +47,9 @@ if (!ast) {
 
 // AST → modèle métier
 const diapo = buildDiapo(ast.diapo);
+
+const outputDir = process.cwd();
+await resolveAssets(diapo, outputDir);
 
 // Génération Reveal.js
 const visitor = new RevealVisitor();

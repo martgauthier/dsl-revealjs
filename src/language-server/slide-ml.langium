@@ -14,13 +14,6 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
-terminal AnnotationsEnabled:
-  'enable' 'annotations';
-
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
-;
-
 terminal SizeEnum:
   'XS' | 'S'  | 'M' | 'L' | 'XL';
 
@@ -139,6 +132,14 @@ TitleComponent:
   'title' text=STRING
 ;
 
+terminal AnnotationsEnabled:
+  'enable' 'annotations';
+
+terminal ID:
+  /[a-zA-Z_][a-zA-Z0-9_]*/
+;
+
 hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

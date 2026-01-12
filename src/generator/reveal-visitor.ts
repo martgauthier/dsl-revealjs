@@ -17,6 +17,7 @@ import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
 
 export class RevealVisitor implements Visitor {
+  constructor(public devServerMode: boolean = false) {}
 
   private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
@@ -34,7 +35,6 @@ export class RevealVisitor implements Visitor {
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
   ${this.annotationsEnabled ? 
         `<!-- Font awesome is required for the chalkboard plugin -->
@@ -105,6 +105,7 @@ export class RevealVisitor implements Visitor {
       ]
     });
 </script>
+${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
 
 </body>
 </html>

@@ -1,7 +1,7 @@
 diapo {
   enable annotations
   slide {
-    title "Hi there !"
+    title "Hsi there !"
     text "Here is a RevealJS presentation written with our own DSL !"
   }
 

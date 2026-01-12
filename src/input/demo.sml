@@ -1,8 +1,9 @@
 diapo {
   enable annotations
+
   slide {
-    title "Hi there !"
-    text "Here is a RevealJS presentation written with our own DSL !"
+    title "Hi there !" 'XS'
+    text "Here is a RevealJS presentation written with our own DSL !" 'L'
   }
 
   nestedSlide {

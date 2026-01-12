@@ -105,7 +105,8 @@ export class RevealVisitor implements Visitor {
       plugins: [ 
           RevealHighlight,
           ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
-      ]
+      ],
+      hash: true
     });
 </script>
 ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}

@@ -18,8 +18,6 @@ terminal ID:
   /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
 
-terminal SizeEnum:
-  'XS' | 'S'  | 'M' | 'L' | 'XL';
 
 // ===== UTILITIES =====
 StringValue returns string:
@@ -75,6 +73,10 @@ SizeMapping:
   key=STRING '=>' value=SizeEnum;
 
 // ===== STRUCTURE =====
+
+SizeEnum returns string:
+  'XL' | 'L' | 'M' | 'S' | 'XS'
+;
 Diapo:
   'diapo' '{'
     annotationsEnabled=('enable annotations')?
@@ -99,8 +101,8 @@ Slide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent | TitleComponent
+  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
 ;
 
 TextComponent:

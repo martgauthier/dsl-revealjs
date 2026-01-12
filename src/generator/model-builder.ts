@@ -16,12 +16,12 @@ type ComponentBuilder = (ast:any) => Component;
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, Size.DEFAULT);
+    return new TextComponent(ast.value, sizeConverter(ast.size));
   },
-  TitleComponent: (ast) => new TitleComponent(ast.text, Size.DEFAULT),
-  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
-  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
+  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size)),
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, sizeConverter(ast.size)),
+  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, sizeConverter(ast.size)),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size)),
   FrameComponent: (ast) => {
     const components = ast.components.map((c: any) => {
       const builder = COMPONENT_BUILDERS[c.$type];
@@ -31,9 +31,9 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction, Size.DEFAULT);
+    return new FrameComponent(components, direction, sizeConverter(ast.size));
   },
-  LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT)
+  LatexComponent: (ast) => new LatexComponent(ast.formula, sizeConverter(ast.size))
 }
 
 
@@ -93,3 +93,20 @@ function dedent(text: string): string {
   return lines.map(l => l.slice(indent)).join("\n");
 }
 
+function sizeConverter(size : string | undefined) : Size{
+  if(size){
+    switch (size) {
+      case "XS":
+        return Size.XS;
+      case "S":
+        return Size.S;
+      case "M":
+        return Size.M;
+      case "L":
+        return Size.L;
+      case "XL":
+        return Size.XL
+    }
+  }
+  return Size.DEFAULT;
+}

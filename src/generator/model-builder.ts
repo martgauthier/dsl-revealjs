@@ -10,6 +10,7 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
+import {TitleComponent} from "../model/components/title-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -17,6 +18,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
     return new TextComponent(ast.value, Size.DEFAULT);
   },
+  TitleComponent: (ast) => new TitleComponent(ast.text, Size.DEFAULT),
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
   ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
   CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
@@ -45,7 +47,7 @@ export function buildDiapo(diapoAst: any): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
-  return new Diapo(slides);
+  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {

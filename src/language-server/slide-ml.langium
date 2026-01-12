@@ -77,6 +77,7 @@ SizeMapping:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
+    annotationsEnabled=('enable annotations')?
     slides+=AbstractSlide*
   '}'
 ;
@@ -99,7 +100,7 @@ Slide:
 
 Component:
   TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent
+  FrameComponent | LatexComponent | TitleComponent
 ;
 
 TextComponent:
@@ -128,6 +129,10 @@ FrameComponent:
 
 LatexComponent:
   'latex' formula=StringValue
+;
+
+TitleComponent:
+  'title' text=STRING
 ;
 
 hidden terminal WS: /\s+/;

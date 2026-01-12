@@ -1,23 +1,24 @@
-
-import type { Visitor } from "../model/visitor.js";
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import type { CodeHighlightAction } from "../model/actions/codehighlight-action.js";
-import type { DisplayAction } from "../model/actions/display-action.js";
-import type { ReplaceAction } from "../model/actions/replace-action.js";
-import type { CodeComponent } from "../model/components/code-component.js";
-import { marked } from "marked";
+import type {Visitor} from "../model/visitor.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import type {CodeHighlightAction} from "../model/actions/codehighlight-action.js";
+import type {DisplayAction} from "../model/actions/display-action.js";
+import type {ReplaceAction} from "../model/actions/replace-action.js";
+import type {CodeComponent} from "../model/components/code-component.js";
+import {marked} from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
 import type {NestedSlide} from "../model/nestedSlide.js";
-import type { FrameComponent } from "../model/components/frame-component.js";
-import { Direction } from "../model/enums/direction.enum.js";
-import type { LatexComponent } from "../model/components/latex-component.js";
+import type {FrameComponent} from "../model/components/frame-component.js";
+import {Direction} from "../model/enums/direction.enum.js";
+import type {LatexComponent} from "../model/components/latex-component.js";
+import type {TitleComponent} from "../model/components/title-component.js";
+import {Size} from "../model/enums/size.enum.js";
 
 export class RevealVisitor implements Visitor {
 
-
+  private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
@@ -34,6 +35,19 @@ export class RevealVisitor implements Visitor {
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
   <script src="./public/mathjax/tex-chtml.js"></script>
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+  ${this.annotationsEnabled ? 
+        `<!-- Font awesome is required for the chalkboard plugin -->
+        <script src="./public/reveal/js/all.min.js"></script>
+        <link rel="stylesheet" href="./public/reveal/js/all.min.css">
+        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+        <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+        <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+        <!-- Chalkboard plugin -->
+        <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+        <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
 
   
   <style>
@@ -73,7 +87,24 @@ export class RevealVisitor implements Visitor {
 
 <script>
   Reveal.initialize({
-      plugins: [ RevealHighlight ]
+      ${this.annotationsEnabled ?
+    `customcontrols: {
+        controls: [
+          { icon: '<i class="fa fa-pen-square"></i>',
+            title: 'Tableau à craie (B)',
+            action: 'RevealChalkboard.toggleChalkboard();'
+          },
+          { icon: '<i class="fa fa-pen"></i>',
+            title: 'Prendre des notes (C)',
+            action: 'RevealChalkboard.toggleNotesCanvas();'
+          }
+        ]
+      },
+      chalkboard: {},` : ''}
+      plugins: [ 
+          RevealHighlight,
+          ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
+      ]
     });
 </script>
 
@@ -104,6 +135,7 @@ export class RevealVisitor implements Visitor {
   }
 
   visitDiapo(diapo: Diapo): void {
+    this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;
       slide.accept(this);
@@ -197,5 +229,26 @@ ${codeComponent.content}
       \\]
     </div>
   `);
+  }
+
+  visitTitleComponent(titleComponent: TitleComponent) {
+    let titleNumber = "1"; // Size.DEFAULT
+    switch (titleComponent.size) {
+      case Size.XL:
+        titleNumber = "1";
+        break;
+      case Size.L:
+        titleNumber = "2";
+        break;
+      case Size.M:
+        titleNumber = "3";
+        break;
+      case Size.S:
+        titleNumber = "4";
+        break;
+      case Size.XS:
+        titleNumber = "5";
+    }
+    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
   }
 }

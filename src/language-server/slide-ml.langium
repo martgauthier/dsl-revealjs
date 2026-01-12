@@ -14,6 +14,9 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
+terminal AnnotationsEnabled:
+  'enable annotations';
+
 // ===== UTILITIES =====
 StringValue returns string:
   STRING | ML_STRING
@@ -115,7 +118,6 @@ ImageComponent:
 
 CodeComponent:
   'code'
-  'language' language=ID
   value=STRING
 ;
 
@@ -131,13 +133,6 @@ LatexComponent:
 
 TitleComponent:
   'title' text=STRING
-;
-
-terminal AnnotationsEnabled:
-  'enable' 'annotations';
-
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
 
 hidden terminal WS: /\s+/;

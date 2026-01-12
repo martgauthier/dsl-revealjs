@@ -1,0 +1,1 @@
+{"version":3,"file":"asset-resolver.d.ts","sourceRoot":"","sources":["../../src/generator/asset-resolver.ts"],"names":[],"mappings":"AAMA,qBAAa,aAAa;IACZ,OAAO,CAAC,SAAS;gBAAT,SAAS,EAAE,MAAM;IAErC,OAAO,CAAC,QAAQ,CAAW;IAErB,OAAO,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO,CAAC,MAAM,CAAC;IAqB3C,OAAO,CAAC,QAAQ;CAiCjB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"visitable.interface.d.ts","sourceRoot":"","sources":["../../src/model/visitable.interface.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,cAAc,CAAC;AAE5C,MAAM,WAAW,SAAS;IACtB,MAAM,CAAC,OAAO,EAAE,OAAO,GAAG,IAAI,CAAC;CAClC"}

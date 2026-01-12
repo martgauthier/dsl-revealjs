@@ -41,8 +41,8 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
   ${this.annotationsEnabled ? 
         `<!-- Font awesome is required for the chalkboard plugin -->
-        <script src="./public/reveal/js/all.min.js"></script>
-        <link rel="stylesheet" href="./public/reveal/js/all.min.css">
+        <script src="./public/fontawesome/js/all.min.js"></script>
+        <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
         <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
         <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
         <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">

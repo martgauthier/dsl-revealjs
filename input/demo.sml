@@ -1,6 +1,7 @@
 diapo {
-  enable annotations
 
   slide {
+    title "dqsdqgdfgfdd"
+    text "hvjsh"
   }
 }

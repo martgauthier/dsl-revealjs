@@ -66,31 +66,27 @@
 
   // --- WebSocket message handler ---
   ws.addEventListener("message", (event) => {
-    try {
-      const msg = JSON.parse(event.data);
+    const msg = JSON.parse(event.data);
 
-      if (msg.type === "stderr") {
-        // Show popup for errors
-        popup.textContent = "Parsing of the file failed! Detailed output below:\n\n" + msg.content;
-        popup.appendChild(closeBtn); // Re-add the close button since textContent clears children
-        popup.style.display = "block";
-      } else if (msg.type === "success") {
-        // Hide popup if explicitly a success message
-        popup.style.display = "none";
-      }
-      // If message type is unknown, do nothing (keep previous popup state)
-    } catch {
-      // fallback for old "refresh" messages
-      if (event.data === "refresh") {
-        badge.textContent = "Dev Server | Reload requested!";
-        badge.style.backgroundColor = "#ffc107";
-        badge.style.color = "#000";
+    if (msg.type === "stderr") {
+      // Show popup for errors
+      popup.textContent = "Parsing of the file failed! Detailed output below:\n\n" + msg.content;
+      popup.appendChild(closeBtn); // Re-add the close button since textContent clears children
+      popup.style.display = "block";
 
-        const currentHash = location.hash;
-        location.reload();
-        if (currentHash) {
-          history.replaceState(null, null, currentHash);
-        }
+      nowDate = new Date();
+      let timeString = nowDate.toLocaleTimeString();
+      badge.textContent = `Dev Server | Last reload: ${timeString}`;
+    }
+    else if (msg.type === "refresh") {
+      badge.textContent = "Dev Server | Reload requested!";
+      badge.style.backgroundColor = "#ffc107";
+      badge.style.color = "#000";
+
+      const currentHash = location.hash;
+      location.reload();
+      if (currentHash) {
+        history.replaceState(null, null, currentHash);
       }
     }
   });

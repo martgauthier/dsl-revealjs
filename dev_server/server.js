@@ -31,7 +31,6 @@ const wss = new WebSocketServer({ server });
 
 wss.on("connection", ws => {
   console.log("Client connecté pour auto-refresh");
-  onFilesChangedCallback();//run it at least once for the client
 });
 
 // Fonction pour notifier tous les clients d'un type de message
@@ -69,6 +68,7 @@ function onFilesChangedCallback() {
       console.error(`stderr : ${stderr}`);
       // Envoyer le stderr au front
       sendToClients("stderr", stderr);
+      return;
     }
 
     if(noErrorsOccured) {
@@ -88,7 +88,8 @@ chokidar.watch(watchFiles).on("change", () => {
   onFilesChangedCallback();
 });
 
+
+onFilesChangedCallback(); //run at least once
 server.listen(port, () => {
   console.log(`Serveur lancé sur http://localhost:${port}`);
-  onFilesChangedCallback(); //run at least once
 });

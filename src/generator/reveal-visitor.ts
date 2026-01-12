@@ -1,19 +1,20 @@
-
-import type { Visitor } from "../model/visitor.js";
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import type { CodeHighlightAction } from "../model/actions/codehighlight-action.js";
-import type { DisplayAction } from "../model/actions/display-action.js";
-import type { ReplaceAction } from "../model/actions/replace-action.js";
-import type { CodeComponent } from "../model/components/code-component.js";
-import { marked } from "marked";
+import type {Visitor} from "../model/visitor.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import type {CodeHighlightAction} from "../model/actions/codehighlight-action.js";
+import type {DisplayAction} from "../model/actions/display-action.js";
+import type {ReplaceAction} from "../model/actions/replace-action.js";
+import type {CodeComponent} from "../model/components/code-component.js";
+import {marked} from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
 import type {NestedSlide} from "../model/nestedSlide.js";
-import type { FrameComponent } from "../model/components/frame-component.js";
-import { Direction } from "../model/enums/direction.enum.js";
-import type { LatexComponent } from "../model/components/latex-component.js";
+import type {FrameComponent} from "../model/components/frame-component.js";
+import {Direction} from "../model/enums/direction.enum.js";
+import type {LatexComponent} from "../model/components/latex-component.js";
+import type {TitleComponent} from "../model/components/title-component.js";
+import {Size} from "../model/enums/size.enum.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -198,5 +199,26 @@ ${codeComponent.content}
       \\]
     </div>
   `);
+  }
+
+  visitTitleComponent(titleComponent: TitleComponent) {
+    let titleNumber = "1"; // Size.DEFAULT
+    switch (titleComponent.size) {
+      case Size.XL:
+        titleNumber = "1";
+        break;
+      case Size.L:
+        titleNumber = "2";
+        break;
+      case Size.M:
+        titleNumber = "3";
+        break;
+      case Size.S:
+        titleNumber = "4";
+        break;
+      case Size.XS:
+        titleNumber = "5";
+    }
+    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
   }
 }

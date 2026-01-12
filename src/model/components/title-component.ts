@@ -1,0 +1,15 @@
+import {Component} from "./component.abstract.js";
+import {Size} from "../enums/size.enum.js";
+import type {Visitable} from "../visitable.interface.js";
+import type {Visitor} from "../visitor.js";
+
+
+export class TitleComponent extends Component implements Visitable {
+    constructor(public text: String, size:Size = Size.DEFAULT){
+        super(size);
+    }
+
+    accept(visitor: Visitor) {
+        visitor.visitTitleComponent(this);
+    }
+}

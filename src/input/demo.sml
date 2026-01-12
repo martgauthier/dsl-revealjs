@@ -1,6 +1,6 @@
 diapo {
   slide {
-    text "# Hi there !"
+    title "Hi there !"
     text "Here is a RevealJS presentation written with our own DSL !"
   }
   

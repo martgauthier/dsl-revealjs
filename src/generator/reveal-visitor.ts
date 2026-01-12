@@ -29,13 +29,13 @@ export class RevealVisitor implements Visitor {
 <head>
   <meta charset="utf-8">
   <title>Reveal DSL</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
+  <link rel="stylesheet" href="./public/reveal/dist/reveal.css">
+  <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
+  <script src="./public/reveal/dist/reveal.js"></script>
+  <script src="./public/reveal/plugin/highlight/highlight.js"></script>
+  <script src="./public/mathjax/tex-chtml.js"></script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-
+  
   <style>
     .reveal ul {
       display: inline-block;
@@ -71,7 +71,6 @@ export class RevealVisitor implements Visitor {
   </div>
 </div>
 
-<script src="reveal.js/dist/reveal.js"></script>
 <script>
   Reveal.initialize({
       plugins: [ RevealHighlight ]

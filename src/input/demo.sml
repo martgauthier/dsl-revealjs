@@ -4,25 +4,11 @@ diapo {
     text "Here is a RevealJS presentation written with our own DSL !"
   }
   
-
-  nestedSlide {
-    slide {
-      text "Here is a nested Slide"
-    }
-
-    slide {
-      text "Here is first subSlide"
-    }
-
-    slide {
-      text "Here is a second one"
-    }
-
-    slide {
-      text "And you found Rick ! (yes, you can also put videos)"
-      video src "./assets/rick-roll.mp4" autoPlay
-    }
+  slide {
+    text "And you found Rick ! (yes, you can also put videos)"
+    video src "./assets/rick-roll.mp4" 
   }
+
 
   slide{
     text "You can make layouts"

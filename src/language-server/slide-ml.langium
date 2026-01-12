@@ -77,6 +77,7 @@ SizeMapping:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
+    annotationsEnabled=('enable annotations')?
     slides+=AbstractSlide*
   '}'
 ;

@@ -45,7 +45,7 @@ export function buildDiapo(diapoAst: any): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
-  return new Diapo(slides);
+  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {

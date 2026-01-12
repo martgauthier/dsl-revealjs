@@ -18,7 +18,7 @@ import {Size} from "../model/enums/size.enum.js";
 
 export class RevealVisitor implements Visitor {
 
-
+  private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
@@ -36,6 +36,16 @@ export class RevealVisitor implements Visitor {
   <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/highlight.js"></script>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+  ${this.annotationsEnabled ? 
+        `<!-- Font awesome is required for the chalkboard plugin -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/customcontrols/plugin.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/customcontrols/style.css">
+        <!-- Chalkboard plugin -->
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/plugin.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/style.css">` : ''}
 
   <style>
     .reveal ul {
@@ -75,7 +85,24 @@ export class RevealVisitor implements Visitor {
 <script src="reveal.js/dist/reveal.js"></script>
 <script>
   Reveal.initialize({
-      plugins: [ RevealHighlight ]
+      ${this.annotationsEnabled ?
+    `customcontrols: {
+        controls: [
+          { icon: '<i class="fa fa-pen-square"></i>',
+            title: 'Tableau à craie (B)',
+            action: 'RevealChalkboard.toggleChalkboard();'
+          },
+          { icon: '<i class="fa fa-pen"></i>',
+            title: 'Prendre des notes (C)',
+            action: 'RevealChalkboard.toggleNotesCanvas();'
+          }
+        ]
+      },
+      chalkboard: {},` : ''}
+      plugins: [ 
+          RevealHighlight,
+          ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
+      ]
     });
 </script>
 
@@ -106,6 +133,7 @@ export class RevealVisitor implements Visitor {
   }
 
   visitDiapo(diapo: Diapo): void {
+    this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;
       slide.accept(this);

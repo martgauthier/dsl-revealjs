@@ -14,6 +14,9 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
+terminal AnnotationsEnabled:
+  'enable' 'annotations';
+
 terminal ID:
   /[a-zA-Z_][a-zA-Z0-9_]*/
 ;
@@ -77,10 +80,11 @@ SizeMapping:
 // ===== STRUCTURE =====
 Diapo:
   'diapo' '{'
-    annotationsEnabled=('enable annotations')?
+    annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
+
 
 AbstractSlide:
   Slide | NestedSlide
@@ -108,7 +112,7 @@ TextComponent:
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')?
 ;
 
 ImageComponent:

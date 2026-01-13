@@ -10,7 +10,10 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
+import { Template } from "../model/template.js";
 import {TitleComponent} from "../model/components/title-component.js";
+import { parseTemplateFromFile } from "../template_export_parser.js";
+import path from "path";
 import {DisplayAction} from "../model/actions/display-action.js";
 import type {Action} from "../model/actions/action.abstract.js";
 import {HideAction} from "../model/actions/hide-action.js";
@@ -18,6 +21,8 @@ import {HighlightAction} from "../model/actions/highlight-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
 
 type ComponentBuilder = (ast:any) => Component;
+
+let PROCESSED_FILE_PATH: string = "";
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
@@ -36,22 +41,81 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction,sizeConverter(ast.size), buildActions(ast.actionBlock));
-  }
+    return new FrameComponent(components, direction, sizeConverter(ast.size), buildActions(ast.actionBlock));
+  },
+  LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT, buildActions(ast.actionBlock))
 }
 
+const TEMPLATE_BUILDERS : Record<string, any> = {
+  "Temp_Header": (section: any, template: Template) => {
+    const builder = COMPONENT_BUILDERS[section.value.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${section.value.$type}`);
+    }
+    template.header = builder(section.value);
+  },
+  "Temp_Footer": (section: any, template: Template) => {
+    const builder = COMPONENT_BUILDERS[section.value.$type];
+    if (!builder) {
+      throw new Error(`Unknown component type: ${section.value.$type}`);
+    }
+    template.footer = builder(section.value);
+  },
+  "Temp_Background": (section: any, template: Template) => {
+    template.background = section.backgroundValue;
+  },
+  "Temp_Colors": (section: any, template: Template) => {
+    let colors: Record<any, any> = {};
+    section.colorMappings.forEach((pair: any) => {
+      colors[pair.key] = pair.value;
+    });
+    template.colors = colors;
+    console.log("Template colors:", template.colors);
+  },
+  "Temp_Fonts": (section: any, template: Template) => {
+    let fonts: Record<any, any> = {};
+    section.fontMappings.forEach((pair: any) => {
+      fonts[pair.key] = pair.value;
+    });
+    template.fonts = fonts;
+  },
+  "Temp_FontSizes": (section: any, template: Template) => {
+    let fontSizes: Record<any, any> = {};
+    section.fontSizeMappings.forEach((pair: any) => {
+      fontSizes[pair.key] = pair.value;
+    });
+    template.fontSizes = fontSizes;
+  },
+  "Temp_Dimensions": (section: any, template: Template) => {
+    let dimensions: Record<any, any> = {};
+    section.dimensionMappings.forEach((pair: any) => {
+      dimensions[pair.key] = pair.value;
+    });
+    template.dimensions = dimensions;
+  }
+}
 
 /**
  * Transforme l’AST Langium → modèle métier
  */
-export function buildDiapo(diapoAst: any): Diapo {
+export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
+  PROCESSED_FILE_PATH = absoluteFilePath;
   const slides = diapoAst.slides.map((abstractSlideAst: any) => {
     if(abstractSlideAst.$type === "Slide"){
       return buildSlide(abstractSlideAst);
     }
     return buildNestedSlide(abstractSlideAst)
   });
-  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
+  
+  let template: Template | undefined = undefined;
+  
+  if(diapoAst.template && diapoAst.template.definition){
+    template = buildTemplateFromDefinition(diapoAst.template.definition);
+  }
+  else if (diapoAst.template && diapoAst.template.include){
+    template = buildTemplateFromInclude(diapoAst.template.include);
+  }
+  return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {
@@ -126,6 +190,31 @@ function dedent(text: string): string {
   );
 
   return lines.map(l => l.slice(indent)).join("\n");
+}
+
+export function buildTemplateFromDefinition(templateAst: any): Template | undefined {
+  let template = new Template();
+
+  for (const section of templateAst.sections) {
+    TEMPLATE_BUILDERS[section.$type](section, template);
+  }
+  
+  if(templateAst.sections) return template;
+}
+
+function buildTemplateFromInclude(templateIncludeAst: any): Template {
+    let filePath = templateIncludeAst.value;
+
+    //The file path will be considered as relative to the currently processed file directory, we need to resolve it
+    let currentFileDir = path.dirname(PROCESSED_FILE_PATH);
+    filePath = path.resolve(currentFileDir, filePath);
+
+    console.log("Including template from file:", filePath);
+    let template = parseTemplateFromFile(filePath);
+
+    console.log("parsed template: ", template);
+
+    return template;
 }
 
 function sizeConverter(size : string | undefined) : Size{

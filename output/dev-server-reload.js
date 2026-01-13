@@ -1,7 +1,58 @@
 (function() {
   const ws = new WebSocket(`ws://${location.host}`);
 
-  // --- Badge creation ---
+  // =========================
+  // === HEARTBEAT CONFIG ===
+  // =========================
+  const HEARTBEAT_INTERVAL = 5000; // ms
+  const HEARTBEAT_TIMEOUT  = 10000; // ms
+
+  let heartbeatInterval = null;
+  let lastPongTime = Date.now();
+  let connectionLost = false;
+
+  function startHeartbeat() {
+    heartbeatInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "ping" }));
+      }
+
+      // Check timeout
+      if (Date.now() - lastPongTime > HEARTBEAT_TIMEOUT) {
+        console.log("pong timeout")
+        handleConnectionLost();
+      }
+    }, HEARTBEAT_INTERVAL);
+  }
+
+  function stopHeartbeat() {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+  }
+
+  function handleConnectionLost() {
+    if (connectionLost) return;
+    connectionLost = true;
+
+    stopHeartbeat();
+
+    popup.textContent =
+      "Connexion au serveur de développement perdue.\n\n" +
+      "Le serveur n'est plus accessible ou a été arrêté.\n" +
+      "Veuillez recharger la page pour tenter de vous reconnecter.";
+    popup.appendChild(closeBtn);
+    popup.style.display = "block";
+
+    badge.textContent = "Dev Server | Disconnected";
+    badge.style.backgroundColor = "#dc3545";
+    badge.style.color = "#fff";
+  }
+
+  // =========================
+  // === BADGE CREATION ===
+  // =========================
   const badge = document.createElement("div");
   badge.style.position = "fixed";
   badge.style.top = "10px";
@@ -18,11 +69,12 @@
   badge.style.transition = "all 0.3s ease";
 
   const now = new Date();
-  const timeString = now.toLocaleTimeString();
-  badge.textContent = `Dev Server | Last reload: ${timeString}`;
+  badge.textContent = `Dev Server | Last reload: ${now.toLocaleTimeString()}`;
   document.body.appendChild(badge);
 
-  // --- Pop-up creation (hidden by default) ---
+  // =========================
+  // === POPUP CREATION ===
+  // =========================
   const popup = document.createElement("div");
   popup.style.position = "fixed";
   popup.style.top = "20%";
@@ -42,7 +94,6 @@
   popup.style.boxShadow = "0 0 15px rgba(0,0,0,0.7)";
   document.body.appendChild(popup);
 
-  // --- Close button ---
   const closeBtn = document.createElement("span");
   closeBtn.textContent = "✖";
   closeBtn.style.position = "absolute";
@@ -54,29 +105,42 @@
   closeBtn.style.fontSize = "16px";
   popup.appendChild(closeBtn);
 
-  // Close popup on click of either the popup itself or the close button
   popup.addEventListener("click", () => {
     popup.style.display = "none";
   });
 
   closeBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent triggering popup click
+    e.stopPropagation();
     popup.style.display = "none";
   });
 
-  // --- WebSocket message handler ---
+  // =========================
+  // === WEBSOCKET EVENTS ===
+  // =========================
+  ws.addEventListener("open", () => {
+    console.log("Connected to dev server for auto-refresh");
+    lastPongTime = Date.now();
+    startHeartbeat();
+  });
+
   ws.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
 
+    if (msg.type === "pong") {
+      console.log("received pong");
+      lastPongTime = Date.now();
+      return;
+    }
+
     if (msg.type === "stderr") {
-      // Show popup for errors
-      popup.textContent = "Parsing of the file failed! Detailed output below:\n\n" + msg.content;
-      popup.appendChild(closeBtn); // Re-add the close button since textContent clears children
+      popup.textContent =
+        "Parsing of the file failed! Detailed output below:\n\n" +
+        msg.content;
+      popup.appendChild(closeBtn);
       popup.style.display = "block";
 
-      nowDate = new Date();
-      let timeString = nowDate.toLocaleTimeString();
-      badge.textContent = `Dev Server | Last reload: ${timeString}`;
+      const t = new Date().toLocaleTimeString();
+      badge.textContent = `Dev Server | Last reload: ${t}`;
     }
     else if (msg.type === "refresh") {
       badge.textContent = "Dev Server | Reload requested!";
@@ -91,12 +155,13 @@
     }
   });
 
-  ws.addEventListener("open", () => {
-    console.log("Connected to dev server for auto-refresh");
-  });
-
   ws.addEventListener("close", () => {
     console.log("WebSocket connection closed");
+    handleConnectionLost();
+  });
+
+  ws.addEventListener("error", () => {
+    handleConnectionLost();
   });
 
 })();

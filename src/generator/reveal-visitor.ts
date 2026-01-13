@@ -37,18 +37,16 @@ export class RevealVisitor implements Visitor {
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
   <script src="./public/mathjax/tex-chtml.js"></script>
   
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
   ${this.annotationsEnabled ? 
-        `<!-- Font awesome is required for the chalkboard plugin -->
-        <script src="./public/fontawesome/js/all.min.js"></script>
-        <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
-        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
-        <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
-        <!-- Chalkboard plugin -->
-        <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
+    `<!-- Font awesome is required for the chalkboard plugin -->
+    <script src="./public/fontawesome/js/all.min.js"></script>
+    <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
+    <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+    <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+    <!-- Chalkboard plugin -->
+    <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
 
   
   <style>
@@ -74,6 +72,34 @@ export class RevealVisitor implements Visitor {
       flex-direction: row;
       align-items: center;
       gap: 10px;
+    }
+    
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Italic.woff2') format('woff2');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-BoldItalic.woff2') format('woff2');
+        font-weight: 700;
+        font-style: italic;
     }
   </style>
 

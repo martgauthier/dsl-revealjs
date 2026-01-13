@@ -109,7 +109,7 @@ TextComponent:
 ;
 
 VideoComponent:
-  'video' 'src' src=STRING autoPlay?=('autoPlay')?
+  'video' src=STRING autoPlay?=('autoPlay')?
 ;
 
 ImageComponent:

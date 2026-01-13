@@ -9,13 +9,23 @@
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
   <script src="./public/mathjax/tex-chtml.js"></script>
-  
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-  
+  <!-- Font awesome is required for the chalkboard plugin -->
+  <script src="./public/fontawesome/js/all.min.js"></script>
+  <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
+  <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+  <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+  <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+  <!-- Chalkboard plugin -->
+  <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+  <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">
 
   
   <style>
+    .slides {
+      font-family: 'Inter',sans-serif;
+    }
+
     .reveal ul {
       display: inline-block;
       text-align: left;
@@ -39,6 +49,34 @@
       align-items: center;
       gap: 10px;
     }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Italic.woff2') format('woff2');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-BoldItalic.woff2') format('woff2');
+        font-weight: 700;
+        font-style: italic;
+    }
   </style>
 
 </head>
@@ -47,23 +85,67 @@
 <div class="reveal">
   <div class="slides">
     <section>
-                <h1>dqsdqgdfgfdd</h1>
-<p>hvjsh</p>
+                <h1>Construction Project</h1>
+<p>Current Status : Ongoing</p>
 
+<img src="./media/e6541f43887c653a1588f7b5263fbbf16468a612.bin" alt="">
+              </section>
+<section>
+                <h1>Outline</h1>
+<ul>
+<li>Work done</li>
+<li>Video</li>
+<li>Conclusion</li>
+</ul>
+
+              </section>
+<section>
+          <section>
+            <h1>Work done</h1>
+<p>Some example of work done up to now</p>
+
+          </section>
+<section>
+            <p>lorem ipsum</p>
+
+          </section>
+<section>
+            <img src="./media/b0c25f14b8c119ff57fca61bf2449f07f4b20117.jpg" alt="">
+          </section>
+        </section>
+<section>
+                <h1>Video</h1>
+<video controls data-autoplay src="./assets/rick-roll.mp4"></video>
+              </section>
+<section>
+                <h1>Conlusion</h1>
               </section>
   </div>
 </div>
 
 <script>
   Reveal.initialize({
-      
+      customcontrols: {
+        controls: [
+          { icon: '<i class="fa fa-pen-square"></i>',
+            title: 'Tableau à craie (B)',
+            action: 'RevealChalkboard.toggleChalkboard();'
+          },
+          { icon: '<i class="fa fa-pen"></i>',
+            title: 'Prendre des notes (C)',
+            action: 'RevealChalkboard.toggleNotesCanvas();'
+          }
+        ]
+      },
+      chalkboard: {},
       plugins: [ 
           RevealHighlight,
-           
-      ]
+          RevealChalkboard, RevealCustomControls 
+      ],
+      hash: true
     });
 </script>
-<script src="./dev-server-reload.js"></script>
+
 
 </body>
 </html>

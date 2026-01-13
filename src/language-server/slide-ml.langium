@@ -124,7 +124,7 @@ ActionBlock:
 ;
 
 Action:
-  DisplayAction | HideAction | HighlightAction
+  DisplayAction | HideAction | HighlightAction | ReplaceAction
 ;
 
 DisplayAction:
@@ -137,6 +137,10 @@ HideAction:
 
 HighlightAction:
   'highlight' 'lines' range=LineRange ('in' 'step' step=INT)?
+;
+
+ReplaceAction:
+  'replace' 'by' update=STRING ('in' 'step' step=INT)?
 ;
 
 LineRange:

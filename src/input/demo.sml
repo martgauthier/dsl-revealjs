@@ -1,94 +1,43 @@
 diapo {
-  slide {
-      code language typescript
-  "visitDiapo(diapo: Diapo): void {
-      for (const slide of diapo.slides) {
-          slide.accept(this);
-      }
-  }"
-    text "Example TypeScript"
-    text "J'apparais en premier" {
-        display in step 1
-        hide in step 2
+slide{
+    image "https://picsum.dev/300/300"{
+        replace by "https://picsum.dev/200/200" in step 1
+        hide in step 7
     }
-    text "J'apparais en 2eme" {
-            display in step 2
-            hide in step 3
+    image "https://picsum.dev/200/200"{
+            replace by "https://picsum.dev/300/300" in step 2
+            hide in step 7
         }
-  }
-
-  nestedSlide {
-    slide {
-      text "Here is a nested Slide"
+}
+  slide{
+    text "Animations"
+    frame vertical{
+        text "Display animation"{
+            display in step 1
+        }
+        text "Replace animation"{
+            display in step 4
+        }
+        text "And lastly... hide animation"{
+            display in step 8
+        }
+        frame horizontal{
+            image "https://picsum.dev/300/200"{
+                display in step 3
+                replace by "./assets/frog.jpg" in step 5
+                hide in step 9
+            }
+            video "./assets/flower.mp4" {
+                display in step 2
+                replace by "./rick-roll.mp4" in step 6
+                hide in step 9
+            }
+            image "https://picsum.dev/200/300"{
+                display in step 3
+                replace by "./assets/frog.jpg" in step 7
+                hide in step 9
+            }
+        }
     }
-
-    slide {
-      text "Here is first subSlide"
-    }
-
-    slide {
-      text "Here is a second one"
-    }
-
-    slide {
-      text "And you found Rick !"
-      video src "./assets/rick-roll.mp4" autoPlay
-    }
-  }
-
-  slide {
-    text "Second slide"
-  }
-
-  slide{
-    video "./assets/rick-roll.mp4" autoPlay
-  }
-
-  slide{
-    frame vertical {
-      frame horizontal {
-        text "top left"
-        text "top right"
-      }
-      frame horizontal {
-        text "bottom left"
-        text "bottom right"
-      }
-    }
-  }
-
-  slide{
-    image "https://picsum.photos/400/300"
-  }
-
-  slide{
-    image "https://picsum.photos/400/300" alt "rick qui roll"
-  }
-
-  slide {
-    text "# Hello DSL"
-    text "**Bold text**"
-    text "- item 1\n- item 2\n- item 3"
-    text "`inline code`"
-  }
-
-  slide {
-    text "Second slide"
-  }
-
-  slide{
-    video "./assets/rick-roll.mp4" autoPlay
-  }
-
-  slide{
-    video "./assets/rick-roll.mp4"
-  }
-
-  slide{
-    image "https://picsum.photos/400/300"
-  }
-
-  slide{
-    image "https://picsum.photos/400/300" alt "rick qui roll"
   }
 }

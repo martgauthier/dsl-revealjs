@@ -14,6 +14,7 @@ import type { FrameComponent } from "../model/components/frame-component.js";
 import { Direction } from "../model/enums/direction.enum.js";
 import type {Action} from "../model/actions/action.abstract.js";
 import {DisplayAction} from "../model/actions/display-action.js";
+import {ReplaceAction} from "../model/actions/replace-action.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -21,6 +22,11 @@ export class RevealVisitor implements Visitor {
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
+
+  private textIdCounter = 0;
+  private imageIdCounter = 0;
+  private videoIdCounter = 0;
+
 
   getResult(): string {
     return `
@@ -108,6 +114,96 @@ export class RevealVisitor implements Visitor {
 <!-- Reveal JS -->
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<!-- Script pour les animations de replace : -->
+<script>
+const replaceMemory = new Map();
+
+function rememberInitialState(el) {
+  if (replaceMemory.has(el)) return;
+
+  if (el.tagName === 'IMG') {
+    replaceMemory.set(el, el.src);
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    replaceMemory.set(el, source ? source.src : null);
+  } else {
+    replaceMemory.set(el, el.textContent);
+  }
+}
+
+function restoreInitialState(el) {
+  if (!replaceMemory.has(el)) return;
+
+  const value = replaceMemory.get(el);
+
+  if (el.tagName === 'IMG') {
+    el.src = value;
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    if (source && value) {
+      source.src = value;
+      el.load();
+    }
+  } else {
+    el.textContent = value;
+  }
+}
+
+Reveal.on('fragmentshown', e => {
+  const f = e.fragment;
+  if (f.dataset.replaceText) {
+    const [selector, newText] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.textContent = newText;
+  }
+  if (f.dataset.replaceImage) {
+    const [selector, newSrc] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.src = newSrc;
+  }
+  if (f.dataset.replaceVideo) {
+    const [selector, newSrc] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    const source = el.querySelector('source');
+    if (!source) return;
+
+    rememberInitialState(el);
+    source.src = newSrc;
+    el.load();
+    el.play();
+  }
+});
+
+Reveal.on('fragmenthidden', e => {
+  const f = e.fragment;
+
+  if (f.dataset.replaceText) {
+    const [selector] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceImage) {
+    const [selector] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceVideo) {
+    const [selector] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+});
+</script>
 
 <script>
     Reveal.initialize({
@@ -165,48 +261,115 @@ export class RevealVisitor implements Visitor {
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
-    const html = marked.parse(textComponent.textContent) as string;
 
-    const fragments = this.renderFragments(
-        html,
-        textComponent.actions
+    const id = `text-${this.textIdCounter++}`;
+
+    const baseHtml =
+        `<p id="${id}">${marked.parseInline(textComponent.textContent)}</p>`;
+
+    const replaceActions = textComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = textComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+      const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+      const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+    const displayedHtml = this.renderFragments(
+        baseHtml,
+        nonReplaceActions
     );
 
-    this.currentSlideContent.push(fragments);
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-text="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
 
   visitImageComponent(imageComponent: ImageComponent): void {
-    const content = `
-    <img 
-      src="${imageComponent.src}" 
-      alt="${imageComponent.alt ?? ""}"
-    >
-  `;
 
-    const fragments = this.renderFragments(
-        content,
-        imageComponent.actions
+    const id = `image-${this.imageIdCounter++}`;
+
+    const baseHtml = `
+<img id="${id}"
+     src="${imageComponent.src}"
+     alt="${imageComponent.alt ?? ""}">
+`;
+
+    const replaceActions = imageComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = imageComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+      const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+      const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+      const displayedHtml = this.renderFragments(
+        baseHtml,
+        nonReplaceActions
     );
 
-    this.currentSlideContent.push(fragments);
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-image="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
 
   visitVideoComponent(videoComponent: VideoComponent): void {
-    const content = `
-    <video 
-      controls 
-      ${videoComponent.autoPlay ? "data-autoplay" : ""}
-      src="${videoComponent.src}">
-    </video>
-  `;
 
-    const fragments = this.renderFragments(
-        content,
-        videoComponent.actions
+    const id = `video-${this.videoIdCounter++}`;
+
+    const baseHtml = `
+<video id="${id}" controls ${videoComponent.autoPlay ? "muted autoplay" : ""}>
+  <source src="${videoComponent.src}" type="video/mp4">
+</video>
+`;
+
+    const replaceActions = videoComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = videoComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+    const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+    const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+
+    const displayedHtml = this.renderFragments(
+    baseHtml,
+    nonReplaceActions
     );
 
-    this.currentSlideContent.push(fragments);
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-video="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
+
+
   visitFrameComponent(frameComponent: FrameComponent): void {
     const frameClass =
         frameComponent.direction === Direction.VERTICAL
@@ -254,14 +417,13 @@ export class RevealVisitor implements Visitor {
         dataLineNumbers.length > 0
             ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
             : "";
-    console.log("highlights2 : ", highlights2);
+
     const dataFragmentIndexes = highlights2.map(h => {
       return h.step-1;
     });
     const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
         ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
         : "";
-    console.log("dataFrag : ", dataFragmentIndexes);
     const content = `
 <pre>
   <code class="language-${codeComponent.language}"
@@ -304,14 +466,17 @@ ${codeComponent.content}
     `;
     }
 
-    if (!display && hide) {
-      return `
+      if (!display && hide) {
+          console.log("hide.step : ", hide.step);
+          return `
+    <div>
       <span class="fragment fade-out"
             data-fragment-index="${hide.step - 1}">
         ${content}
       </span>
-    `;
-    }
+    </div>
+  `;
+      }
 
     if (display && hide) {
       const displayIndex = display.step - 1;
@@ -337,5 +502,6 @@ ${codeComponent.content}
   visitCodeHighlightAction(codeHighlightAction: HighlightAction): void {}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
+  visitReplaceAction(replaceAction: ReplaceAction) {}
 
 }

@@ -10,6 +10,7 @@ import type {HideAction} from "./actions/hide-action.js";
 import type {DisplayAction} from "./actions/display-action.js";
 import type {HighlightAction} from "./actions/highlight-action.js";
 import type { NestedSlide } from "./nestedSlide.js";
+import type {ReplaceAction} from "./actions/replace-action.js";
 
 export interface Visitor {
     visitTemplate(template: Template): void;
@@ -35,4 +36,6 @@ export interface Visitor {
     visitDisplayAction(displayAction: DisplayAction): void;
 
     visitCodeHighlightAction(codeHighlightAction: HighlightAction): void;
+
+    visitReplaceAction(replaceAction: ReplaceAction): void;
 }

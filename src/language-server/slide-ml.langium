@@ -1,14 +1,13 @@
 grammar SlideML
 
 // ===== TERMINALS =====
-terminal ML_STRING: 
+terminal ML_STRING:
   '"""' -> '"""'
 ;
 
 terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
-
 
 terminal DIRECTION: 
   'vertical' | 'horizontal'
@@ -75,13 +74,13 @@ SizeMapping:
 SizeEnum returns string:
   'XL' | 'L' | 'M' | 'S' | 'XS'
 ;
+
 Diapo:
   'diapo' '{'
     annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
-
 
 AbstractSlide:
   Slide | NestedSlide
@@ -105,37 +104,78 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue
+  'text' value=StringValue actionBlock=ActionBlock?
 ;
 
 VideoComponent:
-  'video' 'src' src=STRING autoPlay?=('autoPlay')?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
-  'image' src=STRING ('alt' alt=STRING)?
+  'image' src=STRING ('alt' alt=STRING)? actionBlock=ActionBlock?
 ;
 
 CodeComponent:
-  'code'
-  value=STRING
+    'code'
+    'language' language=UNQUOTED_NO_SPACES
+    value=STRING
+    actionBlock=ActionBlock?
 ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
+    actionBlock=ActionBlock?
   '}'
+;
+
+ActionBlock:
+  '{' actions+=Action* '}'
+;
+
+Action:
+  DisplayAction | HideAction | HighlightAction | ReplaceAction
+;
+
+DisplayAction:
+  'display' ('in' 'step' step=INT)?
+;
+
+HideAction:
+  'hide' ('in' 'step' step=INT)?
+;
+
+HighlightAction:
+  'highlight' 'lines' range=LineRange ('in' 'step' step=INT)?
+;
+
+ReplaceAction:
+  'replace' 'by' update=STRING ('in' 'step' step=INT)?
+;
+
+LineRange:
+  start=INT ('-' end=INT)?
+;
+
+terminal INT returns number:
+  /[0-9]+/
 ;
 
 LatexComponent:
   'latex' formula=StringValue
+  actionBlock=ActionBlock?
 ;
 
 TitleComponent:
   'title' text=STRING
+  actionBlock=ActionBlock?
 ;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
+terminal ARROW:
+  '=>';
+terminal UNQUOTED_NO_SPACES:
+  /[^\s\r\n]+/;

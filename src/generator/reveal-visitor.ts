@@ -1,17 +1,20 @@
-import type {Visitor} from "../model/visitor.js";
-import {Diapo} from "../model/diapo.js";
-import {Slide} from "../model/slide.js";
-import {TextComponent} from "../model/components/text-component.js";
-import type {CodeHighlightAction} from "../model/actions/codehighlight-action.js";
-import type {DisplayAction} from "../model/actions/display-action.js";
-import type {ReplaceAction} from "../model/actions/replace-action.js";
-import type {CodeComponent} from "../model/components/code-component.js";
-import {marked} from "marked";
+
+import type { Visitor } from "../model/visitor.js";
+import { Diapo } from "../model/diapo.js";
+import { Slide } from "../model/slide.js";
+import { TextComponent } from "../model/components/text-component.js";
+import { HighlightAction } from "../model/actions/highlight-action.js";
+import { HideAction } from "../model/actions/hide-action.js";
+import type { CodeComponent } from "../model/components/code-component.js";
+import { marked } from "marked";
 import type {VideoComponent} from "../model/components/video-component.js";
 import type {ImageComponent} from "../model/components/image-component.js";
 import type {NestedSlide} from "../model/nestedSlide.js";
-import type {FrameComponent} from "../model/components/frame-component.js";
-import {Direction} from "../model/enums/direction.enum.js";
+import type { FrameComponent } from "../model/components/frame-component.js";
+import { Direction } from "../model/enums/direction.enum.js";
+import type {Action} from "../model/actions/action.abstract.js";
+import {DisplayAction} from "../model/actions/display-action.js";
+import {ReplaceAction} from "../model/actions/replace-action.js";
 import type {LatexComponent} from "../model/components/latex-component.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
@@ -23,6 +26,11 @@ export class RevealVisitor implements Visitor {
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
+
+  private textIdCounter = 0;
+  private imageIdCounter = 0;
+  private videoIdCounter = 0;
+
 
   getResult(): string {
     return `
@@ -39,7 +47,7 @@ export class RevealVisitor implements Visitor {
   
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-  ${this.annotationsEnabled ? 
+  ${this.annotationsEnabled ?
         `<!-- Font awesome is required for the chalkboard plugin -->
         <script src="./public/fontawesome/js/all.min.js"></script>
         <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
@@ -52,14 +60,14 @@ export class RevealVisitor implements Visitor {
 
   
   <style>
+  :root {
+        --r-block-margin: 20px;
+        --r-code-font: monospace;
+    }
+        
     .reveal ul {
       display: inline-block;
       text-align: left;
-    }
-    .reveal code{
-        display: inline-block;  
-        text-align: left;
-        padding:10px;
     }
     
     .vertical-frame {
@@ -75,6 +83,40 @@ export class RevealVisitor implements Visitor {
       align-items: center;
       gap: 10px;
     }
+    .reveal pre {
+            display: block;
+            position: relative;
+            width: 90%;
+            margin: var(--r-block-margin) auto;
+            text-align: left;
+            font-size: 1em;
+            font-family: var(--r-code-font);
+            line-height: 1.2em;
+            word-wrap: break-word;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .reveal code {
+            font-family: var(--r-code-font);
+            text-transform: none;
+            tab-size: 2;
+        }
+
+        .reveal pre code {
+            display: block;
+            padding: 5px;
+            overflow: auto;
+            max-height: 400px;
+            word-wrap: normal;
+        }
+
+        .reveal .code-wrapper {
+            white-space: normal;
+        }
+
+        .reveal .code-wrapper code {
+            white-space: pre;
+        }
   </style>
 
 </head>
@@ -85,6 +127,100 @@ export class RevealVisitor implements Visitor {
     ${this.slidesHtml.join("\n")}
   </div>
 </div>
+
+<!-- Reveal JS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<!-- Script pour les animations de replace : -->
+<script>
+const replaceMemory = new Map();
+
+function rememberInitialState(el) {
+  if (replaceMemory.has(el)) return;
+
+  if (el.tagName === 'IMG') {
+    replaceMemory.set(el, el.src);
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    replaceMemory.set(el, source ? source.src : null);
+  } else {
+    replaceMemory.set(el, el.textContent);
+  }
+}
+
+function restoreInitialState(el) {
+  if (!replaceMemory.has(el)) return;
+
+  const value = replaceMemory.get(el);
+
+  if (el.tagName === 'IMG') {
+    el.src = value;
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    if (source && value) {
+      source.src = value;
+      el.load();
+    }
+  } else {
+    el.textContent = value;
+  }
+}
+
+Reveal.on('fragmentshown', e => {
+  const f = e.fragment;
+  if (f.dataset.replaceText) {
+    const [selector, newText] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.textContent = newText;
+  }
+  if (f.dataset.replaceImage) {
+    const [selector, newSrc] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.src = newSrc;
+  }
+  if (f.dataset.replaceVideo) {
+    const [selector, newSrc] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    const source = el.querySelector('source');
+    if (!source) return;
+
+    rememberInitialState(el);
+    source.src = newSrc;
+    el.load();
+    el.play();
+  }
+});
+
+Reveal.on('fragmenthidden', e => {
+  const f = e.fragment;
+
+  if (f.dataset.replaceText) {
+    const [selector] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceImage) {
+    const [selector] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceVideo) {
+    const [selector] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+});
+</script>
 
 <script>
   Reveal.initialize({
@@ -106,7 +242,8 @@ export class RevealVisitor implements Visitor {
           RevealHighlight,
           ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
       ],
-      hash: true
+      hash: true,
+      slideNumber: true
     });
 </script>
 ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
@@ -181,59 +318,257 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
+
+    const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parse(normalized) as string;
-    this.currentSlideContent.push(html);
+    const baseHtml =
+        `<p id="${id}">${html}</p>`;
+
+    const replaceActions = textComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = textComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+      const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+      const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+    const displayedHtml = this.renderFragments(
+        baseHtml,
+        nonReplaceActions
+    );
+
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-text="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
 
-  visitImageComponent(imageComponent:ImageComponent): void {
-    const content = `<img src="${imageComponent.src}" alt="${imageComponent.alt ? imageComponent.alt : ""}">`
-    this.currentSlideContent.push(content);
+  visitImageComponent(imageComponent: ImageComponent): void {
+
+    const id = `image-${this.imageIdCounter++}`;
+
+    const baseHtml = `
+<img id="${id}"
+     src="${imageComponent.src}"
+     alt="${imageComponent.alt ?? ""}">
+`;
+
+    const replaceActions = imageComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = imageComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+      const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+      const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+      const displayedHtml = this.renderFragments(
+        baseHtml,
+        nonReplaceActions
+    );
+
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-image="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
 
-  visitVideoComponent(videoComponent:VideoComponent): void {
-    const content = `<video controls ${videoComponent.autoPlay ? "data-autoplay" : ""} src="${videoComponent.src}"></video>`;
-    this.currentSlideContent.push(content);
+  visitVideoComponent(videoComponent: VideoComponent): void {
+
+    const id = `video-${this.videoIdCounter++}`;
+
+    const baseHtml = `
+<video id="${id}" controls ${videoComponent.autoPlay ? "muted autoplay" : ""}>
+  <source src="${videoComponent.src}" type="video/mp4">
+</video>
+`;
+
+    const replaceActions = videoComponent.actions.filter(
+        a => a instanceof ReplaceAction
+    ) as ReplaceAction[];
+
+    const nonReplaceActions = videoComponent.actions.filter(
+        a => !(a instanceof ReplaceAction)
+    );
+    const hasDisplay = nonReplaceActions.some(a => a instanceof DisplayAction);
+    const hasHide = nonReplaceActions.some(a => a instanceof HideAction);
+
+
+    const displayedHtml = this.renderFragments(
+    baseHtml,
+    nonReplaceActions
+    );
+
+    const replaceFragments = replaceActions.map(replace => `
+<span class="fragment"
+      data-fragment-index="${replace.step-1}"
+      data-replace-video="#${id}|${replace.updatedContent}">
+</span>
+`).join("\n");
+
+    this.currentSlideContent.push(
+        displayedHtml + replaceFragments
+    );
   }
 
-  visitFrameComponent(FrameComponent: FrameComponent): void {
-    const frameClass = FrameComponent.direction === Direction.VERTICAL ? "vertical-frame" : "horizontal-frame";
-    let frameContent = [];
 
-    for (const component of FrameComponent.components) {
+  visitFrameComponent(frameComponent: FrameComponent): void {
+    const frameClass =
+        frameComponent.direction === Direction.VERTICAL
+            ? "vertical-frame"
+            : "horizontal-frame";
+
+    const frameContent: string[] = [];
+
+    for (const component of frameComponent.components) {
       component.accept(this);
-      frameContent.push(this.currentSlideContent.pop());
+      frameContent.push(this.currentSlideContent.pop()!);
     }
 
-    this.currentSlideContent.push(`
-      <div class="${frameClass}">
-        ${frameContent.join("\n")}
-      </div>
-    `);
+    const content = `
+    <div class="${frameClass}">
+      ${frameContent.join("\n")}
+    </div>
+  `;
+
+    const fragments = this.renderFragments(
+        content,
+        frameComponent.actions
+    );
+    this.currentSlideContent.push(fragments);
   }
 
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void {
-    this.currentSlideContent.push(`
-<pre><code class="language-${codeComponent.language}">
+    visitCodeComponent(codeComponent: CodeComponent): void {
+
+        const highlights = codeComponent.actions
+            .filter(a => a instanceof HighlightAction)
+            .sort((a, b) => a.step - b.step) as HighlightAction[];
+
+        let highlights2 = highlights;
+        const dataLineNumbers = highlights.map(h => {
+            if (h.startLine === h.endLine) {
+                return `${h.startLine}`;
+            }
+            return `${h.startLine}-${h.endLine}`;
+        });
+
+        const dataLineNumbersJoined =
+            dataLineNumbers.length > 0
+                ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
+                : "";
+
+        const dataFragmentIndexes = highlights2.map(h => {
+            return h.step-1;
+        });
+        const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
+            ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
+            : "";
+        const content = `
+<pre>
+  <code class="language-${codeComponent.language}"
+        data-trim
+        ${dataLineNumbersJoined} ${dataFragmentIndexesJoined}>
 ${codeComponent.content}
-</code></pre>
-`);
+  </code>
+</pre>
+`;
+
+        const display = codeComponent.actions.find(a => a instanceof DisplayAction);
+        const hide = codeComponent.actions.find(a => a instanceof HideAction);
+
+        this.currentSlideContent.push(
+            this.renderFragments(
+                content,
+                [display, hide].filter(Boolean) as Action[]
+            )
+        );
+    }
+
+
+  private renderFragments(
+      content: string,
+      actions: Action[]
+  ): string {
+    const display = actions.find(a => a instanceof DisplayAction);
+    const hide = actions.find(a => a instanceof HideAction);
+
+    if (!display && !hide) {
+      return content;
+    }
+
+    if (display && !hide) {
+      return `
+      <div class="fragment fade-in"
+           data-fragment-index="${display.step - 1}">
+        ${content}
+      </div>
+    `;
+    }
+
+      if (!display && hide) {
+          console.log("hide.step : ", hide.step);
+          return `
+    <div>
+      <span class="fragment fade-out"
+            data-fragment-index="${hide.step - 1}">
+        ${content}
+      </span>
+    </div>
+  `;
+      }
+
+    if (display && hide) {
+      const displayIndex = display.step - 1;
+      const hideIndex = Math.max(
+          hide.step - 1,
+          displayIndex + 1
+      );
+
+      return `
+      <div class="fragment fade-in"
+           data-fragment-index="${displayIndex}">
+        <span class="fragment fade-out"
+              data-fragment-index="${hideIndex}">
+          ${content}
+        </span>
+      </div>
+    `;
+    }
+
+    return content;
   }
-  visitReplaceAction(replaceAction: ReplaceAction): void {}
+
+  visitCodeHighlightAction(codeHighlightAction: HighlightAction): void {}
   visitDisplayAction(displayAction: DisplayAction): void {}
-  visitCodeHighlightAction(codeHighlightAction: CodeHighlightAction): void {}
-  visitLatexComponent(latexComponent: LatexComponent): void {
-    const formula = this.normalizeMultiline(latexComponent.formula);
-    this.currentSlideContent.push(`
+  visitHideAction(hideAction: HideAction): void {}
+  visitReplaceAction(replaceAction: ReplaceAction) {}
+    visitLatexComponent(latexComponent: LatexComponent): void {
+        const formula = this.normalizeMultiline(latexComponent.formula);
+        this.currentSlideContent.push(`
     <div>
       \\[
         ${formula}
       \\]
     </div>
-  `);
-  }
-
+    `);
+    }
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {

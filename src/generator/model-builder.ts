@@ -11,17 +11,22 @@ import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
 import {TitleComponent} from "../model/components/title-component.js";
+import {DisplayAction} from "../model/actions/display-action.js";
+import type {Action} from "../model/actions/action.abstract.js";
+import {HideAction} from "../model/actions/hide-action.js";
+import {HighlightAction} from "../model/actions/highlight-action.js";
+import {ReplaceAction} from "../model/actions/replace-action.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, sizeConverter(ast.size));
+    return new TextComponent(ast.value, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size)),
-  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, sizeConverter(ast.size)),
-  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, sizeConverter(ast.size)),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size)),
+  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size), buildActions(ast.actionBlock)),
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
+  ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   FrameComponent: (ast) => {
     const components = ast.components.map((c: any) => {
       const builder = COMPONENT_BUILDERS[c.$type];
@@ -31,9 +36,8 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction, sizeConverter(ast.size));
-  },
-  LatexComponent: (ast) => new LatexComponent(ast.formula, sizeConverter(ast.size))
+    return new FrameComponent(components, direction,sizeConverter(ast.size), buildActions(ast.actionBlock));
+  }
 }
 
 
@@ -77,6 +81,37 @@ function buildNestedSlide(nestedSlideAst: any): NestedSlide {
       subSlides         // subSlides
   )
 }
+
+function buildActions(actionBlockAst: any): Action[] {
+  if (!actionBlockAst) return [];
+
+  return actionBlockAst.actions.map((a: any) => {
+    switch (a.$type) {
+      case "DisplayAction":
+        return new DisplayAction(a.step ?? 1);
+      case "HideAction":
+        console.log("a.step : ", a.step);
+        let h = new HideAction(a.step ?? 1);
+        console.log("h",h);
+        return h;
+      case "HighlightAction": {
+        const start = a.range.start;
+        const end = a.range.end ?? start;
+        return new HighlightAction(
+            a.step ?? 1,
+            start,
+            end
+        );
+      }
+      case "ReplaceAction":
+        return new ReplaceAction(a.step ?? 1, a.update )
+
+      default:
+        throw new Error(`Unknown action: ${a.$type}`);
+    }
+  });
+}
+
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");

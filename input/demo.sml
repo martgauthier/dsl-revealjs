@@ -1,6 +1,11 @@
 diapo {
+  use template "./template_export.sml"
+
   slide {
-    title "dqsdqgdfgfdd"
-    text "hvjsh"
+    text "hddshdfe"
+  }
+
+  slide {
+    text "htvyfujliso"
   }
 }

@@ -26,13 +26,17 @@ UnquotedStringBinding:
 
 // ===== ENTRY =====
 entry Model:
-  diapo=Diapo
+  diapo=Diapo | templateExport=TemplateExport
 ;
 
 
 // ===== TEMPLATE ======
 TemplateDefinitionOrInclude:
   'use' 'template' (definition=TemplateDefinition | include=TemplateInclude);
+
+TemplateExport:
+  'export' 'template' definition=TemplateDefinition
+;
 
 TemplateInclude:
   value=STRING;

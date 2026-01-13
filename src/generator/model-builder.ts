@@ -12,8 +12,12 @@ import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
 import { Template } from "../model/template.js";
 import {TitleComponent} from "../model/components/title-component.js";
+import { parseTemplateFromFile } from "../template_export_parser.js";
+import path from "path";
 
 type ComponentBuilder = (ast:any) => Component;
+
+let PROCESSED_FILE_PATH: string = "";
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
@@ -89,7 +93,8 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
 /**
  * Transforme l’AST Langium → modèle métier
  */
-export function buildDiapo(diapoAst: any): Diapo {
+export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
+  PROCESSED_FILE_PATH = absoluteFilePath;
   const slides = diapoAst.slides.map((abstractSlideAst: any) => {
     if(abstractSlideAst.$type === "Slide"){
       return buildSlide(abstractSlideAst);
@@ -151,7 +156,7 @@ function dedent(text: string): string {
   return lines.map(l => l.slice(indent)).join("\n");
 }
 
-function buildTemplateFromDefinition(templateAst: any): Template | undefined {
+export function buildTemplateFromDefinition(templateAst: any): Template | undefined {
   let template = new Template();
 
   for (const section of templateAst.sections) {
@@ -161,10 +166,21 @@ function buildTemplateFromDefinition(templateAst: any): Template | undefined {
   if(templateAst.sections) return template;
 }
 
-function buildTemplateFromInclude(templateIncludeAst: any): undefined {
-    //TODO: Return template from reading file (source path = templateIncludeAst)
-    return undefined;
+function buildTemplateFromInclude(templateIncludeAst: any): Template {
+    let filePath = templateIncludeAst.value;
+
+    //The file path will be considered as relative to the currently processed file directory, we need to resolve it
+    let currentFileDir = path.dirname(PROCESSED_FILE_PATH);
+    filePath = path.resolve(currentFileDir, filePath);
+
+    console.log("Including template from file:", filePath);
+    let template = parseTemplateFromFile(filePath);
+
+    console.log("parsed template: ", template);
+
+    return template;
 }
+
 function sizeConverter(size : string | undefined) : Size{
   if(size){
     switch (size) {

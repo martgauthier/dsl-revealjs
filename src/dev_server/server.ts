@@ -5,11 +5,11 @@ import chokidar from "chokidar";
 import { exec } from "child_process";
 import path from "path";
 
-const app = express();
+const app: any = express();
 const port = 3000;
 
 // Désactiver tous les headers CORS
-app.use((req, res, next) => {
+app.use((req: any, res: any, next: any) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(process.cwd(), "output")));
 
 // Page de test
-app.get("/", (req, res) => {
+app.get("/", (req: any, res: any) => {
   res.sendFile(path.join(process.cwd(), "output/index.html"));
 });
 
@@ -29,14 +29,18 @@ const server = createServer(app);
 // WebSocket pour notifier le client
 const wss = new WebSocketServer({ server });
 
-wss.on("connection", ws => {
+wss.on("connection", (ws: any) => {
   console.log("Client connecté pour auto-refresh");
 });
 
+wss.on("message", (message: any) => {
+  sendToClients("pong", message);
+});
+
 // Fonction pour notifier tous les clients d'un type de message
-function sendToClients(type, content) {
+function sendToClients(type: string, content: any) {
   const message = JSON.stringify({ type, content });
-  wss.clients.forEach(ws => {
+  wss.clients?.forEach((ws: any) => {
     if (ws.readyState === ws.OPEN) {
       ws.send(message);
     }
@@ -50,7 +54,7 @@ function notifyRefresh() {
 
 // Surveiller le fichier demo.sml
 const watchFiles = [
-  path.join(process.cwd(), "input/demo.sml"),
+  path.join(process.cwd(), "input"),
   path.join(process.cwd(), "src/language-server/slide-ml.langium")
 ];
 

@@ -19,6 +19,7 @@
 
       // Check timeout
       if (Date.now() - lastPongTime > HEARTBEAT_TIMEOUT) {
+        console.log("pong timeout")
         handleConnectionLost();
       }
     }, HEARTBEAT_INTERVAL);
@@ -126,6 +127,7 @@
     const msg = JSON.parse(event.data);
 
     if (msg.type === "pong") {
+      console.log("received pong");
       lastPongTime = Date.now();
       return;
     }

@@ -80,6 +80,22 @@ export class RevealVisitor implements Visitor {
       align-items: center;
       gap: 10px;
     }
+
+    .template-header, .template-footer {
+      position: absolute;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-height: 15%;
+    }
+
+    .template-header {
+      top: 0;
+    }
+    .template-footer {
+      bottom: 0;
+    }
     ${this.templateStyle}
   </style>
 
@@ -87,9 +103,11 @@ export class RevealVisitor implements Visitor {
 <body>
 
 <div class="reveal">
+  ${this.hasTemplate ? `<div class="template-header">${this.templateHeader}</div>` : ""}
   <div class="slides">
     ${this.slidesHtml.join("\n")}
   </div>
+  ${this.hasTemplate ? `<div class="template-footer">${this.templateFooter}</div>` : ""}
 </div>
 
 <script>
@@ -164,9 +182,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     if(!this.isNestedSlide){
           this.slidesHtml.push(
               `<section ${this.hasTemplate ? 'class="slide"' : ''}>
-                ${this.templateHeader}
                 ${this.currentSlideContent.join("\n")}
-                ${this.templateFooter}
               </section>`
           );
     }
@@ -181,9 +197,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
       subslide.accept(this);
       const subSlideContent =
           `<section ${this.hasTemplate ? 'class="slide"' : ''}>
-            ${this.templateHeader}
             ${this.currentSlideContent.join("\n")}
-            ${this.templateFooter}
           </section>`;
       nestedSlidesContent.push(subSlideContent);
     }

@@ -31,10 +31,10 @@ const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws: any) => {
   console.log("Client connecté pour auto-refresh");
-});
 
-wss.on("message", (message: any) => {
-  sendToClients("pong", message);
+  ws.on("message", (message: any) => {
+    ws.send(JSON.stringify({ type: "pong" }));
+  });
 });
 
 // Fonction pour notifier tous les clients d'un type de message

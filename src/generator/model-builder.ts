@@ -82,13 +82,16 @@ export function buildDiapo(diapoAst: any): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
+  
   let template: Template | undefined = undefined;
-  if(diapoAst.template.definition){
+  
+  if(diapoAst.template && diapoAst.template.definition){
     template = buildTemplateFromDefinition(diapoAst.template.definition);
-  }else if (diapoAst.template.include){
+  }
+  else if (diapoAst.template && diapoAst.template.include){
     template = buildTemplateFromInclude(diapoAst.template.include);
   }
-  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
+  return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {

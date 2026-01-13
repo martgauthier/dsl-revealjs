@@ -348,7 +348,10 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
 
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
-    const html = marked.parse(normalized) as string;
+    const html = marked.parseInline(normalized) as string;
+    console.log("norm", normalized);
+    console.log("html", html);
+
     const baseHtml =
         `<p id="${id}">${html}</p>`;
 

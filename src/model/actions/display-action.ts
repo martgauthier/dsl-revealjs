@@ -3,8 +3,8 @@ import type {Component} from "../components/component.abstract.js";
 import type {Visitor} from "../visitor.js";
 
 export class DisplayAction extends Action {
-    constructor(updatedComponent: Component, public shouldDisplay: boolean) {
-        super(updatedComponent);
+    constructor( step : number = 1) {
+        super(step);
     }
 
     accept(visitor: Visitor): void {

@@ -16,14 +16,14 @@
 
   
   <style>
+  :root {
+        --r-block-margin: 20px;
+        --r-code-font: monospace;
+    }
+        
     .reveal ul {
       display: inline-block;
       text-align: left;
-    }
-    .reveal code{
-        display: inline-block;  
-        text-align: left;
-        padding:10px;
     }
     
     .vertical-frame {
@@ -39,9 +39,40 @@
       align-items: center;
       gap: 10px;
     }
-    p { color: green; }
-p { font-size: 2em; }
+    .reveal pre {
+            display: block;
+            position: relative;
+            width: 90%;
+            margin: var(--r-block-margin) auto;
+            text-align: left;
+            font-size: 1em;
+            font-family: var(--r-code-font);
+            line-height: 1.2em;
+            word-wrap: break-word;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
 
+        .reveal code {
+            font-family: var(--r-code-font);
+            text-transform: none;
+            tab-size: 2;
+        }
+
+        .reveal pre code {
+            display: block;
+            padding: 5px;
+            overflow: auto;
+            max-height: 400px;
+            word-wrap: normal;
+        }
+
+        .reveal .code-wrapper {
+            white-space: normal;
+        }
+
+        .reveal .code-wrapper code {
+            white-space: pre;
+        }
   </style>
 
 </head>
@@ -49,20 +80,107 @@ p { font-size: 2em; }
 
 <div class="reveal">
   <div class="slides">
-    <section class="slide">
-                <img src="https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/zwpori82kr8sm8e1fvsp?ik-sanitizeSvg=true" alt="">
-                <p>hddshdfe</p>
-
-                <img src="https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/18c05fe098149fb63b274945ce1a672e" alt="">
-              </section>
-<section class="slide">
-                <img src="https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/zwpori82kr8sm8e1fvsp?ik-sanitizeSvg=true" alt="">
-                <p>htvyfujliso</p>
-
-                <img src="https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/18c05fe098149fb63b274945ce1a672e" alt="">
+    <section>
+                <h1>dqsdqgdfgfdd</h1>
+<p id="text-0"><p>hvjsh</p>
+</p>
               </section>
   </div>
 </div>
+
+<!-- Reveal JS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<!-- Script pour les animations de replace : -->
+<script>
+const replaceMemory = new Map();
+
+function rememberInitialState(el) {
+  if (replaceMemory.has(el)) return;
+
+  if (el.tagName === 'IMG') {
+    replaceMemory.set(el, el.src);
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    replaceMemory.set(el, source ? source.src : null);
+  } else {
+    replaceMemory.set(el, el.textContent);
+  }
+}
+
+function restoreInitialState(el) {
+  if (!replaceMemory.has(el)) return;
+
+  const value = replaceMemory.get(el);
+
+  if (el.tagName === 'IMG') {
+    el.src = value;
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    if (source && value) {
+      source.src = value;
+      el.load();
+    }
+  } else {
+    el.textContent = value;
+  }
+}
+
+Reveal.on('fragmentshown', e => {
+  const f = e.fragment;
+  if (f.dataset.replaceText) {
+    const [selector, newText] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.textContent = newText;
+  }
+  if (f.dataset.replaceImage) {
+    const [selector, newSrc] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.src = newSrc;
+  }
+  if (f.dataset.replaceVideo) {
+    const [selector, newSrc] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    const source = el.querySelector('source');
+    if (!source) return;
+
+    rememberInitialState(el);
+    source.src = newSrc;
+    el.load();
+    el.play();
+  }
+});
+
+Reveal.on('fragmenthidden', e => {
+  const f = e.fragment;
+
+  if (f.dataset.replaceText) {
+    const [selector] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceImage) {
+    const [selector] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceVideo) {
+    const [selector] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+});
+</script>
 
 <script>
   Reveal.initialize({
@@ -71,10 +189,11 @@ p { font-size: 2em; }
           RevealHighlight,
            
       ],
-      hash: true
+      hash: true,
+      slideNumber: true
     });
 </script>
-<script src="./dev-server-reload.js"></script>
+
 
 </body>
 </html>

@@ -3,7 +3,7 @@ import type {Visitable} from "../visitable.interface.js";
 import type {Visitor} from "../visitor.js";
 
 export abstract class Action implements Visitable {
-    constructor(protected updatedComponent: Component) {}
+    constructor(public step : number = 1) {}
 
     abstract accept(visitor: Visitor) : void;
 }

@@ -4,13 +4,19 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node dist/main.js",
-    "generate": "npx langium-cli generate"
+    "generate": "npx langium-cli generate",
+    "dev": "node dev_server/server.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "marked": "^17.0.1",
+    "chokidar": "^3.5.3",
+    "express": "^4.18.2",
+    "ws": "^8.13.0",
+    "mathjax": "^4.1.0",
+    "reveal.js": "^5.2.1",
     "typescript": "^5.9.3"
   },
   "type": "module",

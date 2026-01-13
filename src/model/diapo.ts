@@ -7,7 +7,8 @@ import type {AbstractSlide} from "./AbstractSlide.js";
 export class Diapo implements Visitable{
     constructor(
         public slides: AbstractSlide[],
-        public template?: Template
+        public template?: Template,
+        public annotationsEnabled: boolean = false
     ) {}
 
     accept(visitor: Visitor): void {

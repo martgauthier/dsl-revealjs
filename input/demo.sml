@@ -1,11 +1,6 @@
 diapo {
-
   slide {
-    title "dqsdqdsqdgdfgfdd"
+    title "dqsdqgdfgfdd"
     text "hvjsh"
-  }
-
-  slide {
-    text "uyfgiosçi"
   }
 }

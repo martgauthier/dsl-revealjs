@@ -11,16 +11,18 @@ import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
 import { Template } from "../model/template.js";
+import {TitleComponent} from "../model/components/title-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, Size.DEFAULT);
+    return new TextComponent(ast.value, sizeConverter(ast.size));
   },
-  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT),
-  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, Size.DEFAULT),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT),
+  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size)),
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, sizeConverter(ast.size)),
+  ImageComponent: (ast) => new ImageComponent(ast.src, ast.alt, sizeConverter(ast.size)),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size)),
   FrameComponent: (ast) => {
     const components = ast.components.map((c: any) => {
       const builder = COMPONENT_BUILDERS[c.$type];
@@ -30,7 +32,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction, Size.DEFAULT);
+    return new FrameComponent(components, direction, sizeConverter(ast.size));
   },
   LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT)
 }
@@ -86,7 +88,7 @@ export function buildDiapo(diapoAst: any): Diapo {
   }else if (diapoAst.template.include){
     template = buildTemplateFromInclude(diapoAst.template.include);
   }
-  return new Diapo(slides, template);
+  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {
@@ -145,4 +147,21 @@ function buildTemplateFromDefinition(templateAst: any): Template | undefined {
 function buildTemplateFromInclude(templateIncludeAst: any): undefined {
     //TODO: Return template from reading file (source path = templateIncludeAst)
     return undefined;
+}
+function sizeConverter(size : string | undefined) : Size{
+  if(size){
+    switch (size) {
+      case "XS":
+        return Size.XS;
+      case "S":
+        return Size.S;
+      case "M":
+        return Size.M;
+      case "L":
+        return Size.L;
+      case "XL":
+        return Size.XL
+    }
+  }
+  return Size.DEFAULT;
 }

@@ -13,8 +13,8 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
-terminal SizeEnum:
-  'XS' | 'S'  | 'M' | 'L' | 'XL';
+terminal AnnotationsEnabled:
+  'enable annotations';
 
 // ===== UTILITIES =====
 StringValue returns string:
@@ -69,12 +69,18 @@ SizeMapping:
   key=STRING ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
+
+SizeEnum returns string:
+  'XL' | 'L' | 'M' | 'S' | 'XS'
+;
 Diapo:
   'diapo' '{'
     template=TemplateDefinitionOrInclude?
+    annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
+
 
 AbstractSlide:
   Slide | NestedSlide
@@ -93,8 +99,8 @@ Slide:
 ;
 
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent
+  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
 ;
 
 TextComponent:
@@ -102,7 +108,7 @@ TextComponent:
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')?
 ;
 
 ImageComponent:
@@ -123,6 +129,10 @@ FrameComponent:
 
 LatexComponent:
   'latex' formula=StringValue
+;
+
+TitleComponent:
+  'title' text=STRING
 ;
 
 hidden terminal WS: /\s+/;

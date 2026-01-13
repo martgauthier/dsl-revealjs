@@ -81,9 +81,51 @@
 <div class="reveal">
   <div class="slides">
     <section>
-                <h1>dqsdqgdfgfdd</h1>
-<p id="text-0"><p>hvjsh</p>
-</p>
+                <h1>Display Animations</h1>
+
+      <div class="fragment fade-in"
+           data-fragment-index="0">
+        <p id="text-0">Hello</p>
+      </div>
+    
+              </section>
+<section>
+                <h1>Hide Animations</h1>
+
+    <div>
+      <span class="fragment fade-out"
+            data-fragment-index="0">
+        <p id="text-1">Goodbye</p>
+      </span>
+    </div>
+  
+              </section>
+<section>
+                <h1>Replace Animations</h1>
+<p id="text-2">1...</p>
+<span class="fragment"
+      data-fragment-index="0"
+      data-replace-text="#text-2|...2">
+</span>
+
+              </section>
+<section>
+                <h1>Highlight Code Animations</h1>
+
+<pre>
+  <code class="language-javascript"
+        data-trim
+        data-line-numbers="|1|2|3|4" data-fragment-index="0|1|2|3">
+const components = ast.components.map((c: any) => {
+    const builder = COMPONENT_BUILDERS[c.$type];
+    if (!builder) {
+        throw new Error(`Unknown component type: ${c.$type}`);
+    }
+    return builder(c);
+});
+  </code>
+</pre>
+
               </section>
   </div>
 </div>

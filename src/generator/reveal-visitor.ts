@@ -15,6 +15,7 @@ import {Direction} from "../model/enums/direction.enum.js";
 import type {LatexComponent} from "../model/components/latex-component.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
+import { Transition } from "../model/enums/transition.enum.js";
 
 export class RevealVisitor implements Visitor {
 
@@ -149,15 +150,34 @@ export class RevealVisitor implements Visitor {
       component.accept(this);
     }
 
-    if(!this.isNestedSlide){
-          this.slidesHtml.push(
-              `<section>
-                ${this.currentSlideContent.join("\n")}
-              </section>`
-          );
-    }
+    const transitionAttr = (() => {
+      if (
+        slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT
+      ) return "";
 
+      const inPart =
+        slide.transitionIn !== Transition.DEFAULT
+          ? `${slide.transitionIn}-in`
+          : "default-in";
+
+      const outPart =
+        slide.transitionOut !== Transition.DEFAULT
+          ? `${slide.transitionOut}-out`
+          : "default-out";
+
+      return ` data-transition="${inPart} ${outPart}"`;
+    })();
+
+    if (!this.isNestedSlide) {
+      this.slidesHtml.push(
+        `<section${transitionAttr}>
+        ${this.currentSlideContent.join("\n")}
+      </section>`
+      );
+    }
   }
+
 
   visitNestedSlide(nestedSlide: NestedSlide) {
     this.isNestedSlide = true;

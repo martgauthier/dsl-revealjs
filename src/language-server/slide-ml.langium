@@ -84,6 +84,7 @@ Diapo:
   '}'
 ;
 
+
 AbstractSlide:
   Slide | NestedSlide
 ;
@@ -93,9 +94,17 @@ NestedSlide:
     subSlides+=Slide*
   '}'
 ;
-
+TransitionType returns string:
+  'none' | 'default' | 'zoom' | 'fade' | 'concave' | 'convex'
+;
 Slide:
   'slide' '{'
+    ('transition'
+      ( 'in' transitionIn=TransitionType
+      | 'out' transitionOut=TransitionType
+      | transition=TransitionType
+      )*
+    )?
     components+=Component*
   '}'
 ;

@@ -5,25 +5,29 @@ diapo {
     title "Hi there !" 'XS'
     text "Here is a RevealJS presentation written with our own DSL !" 'L'
   }
-
-  nestedSlide {
-    slide {
-      text "Here is a nested Slide"
-    }
-
-    slide {
-      text "Here is first subSlide"
-    }
-
-    slide {
-      text "Here is a second one"
-    }
-
-    slide {
-      text "And you found Rick ! (yes, you can also put videos)"
-      video src "./assets/rick-roll.mp4" autoPlay
-    }
+  slide {
+    transition in zoom out zoom
+    title "Zoom Slide"
   }
+  slide {
+    transition in fade out fade
+    title "Fade slide"
+  }
+  slide {
+    transition in zoom
+    title "zoom slide"
+    
+  }
+  slide {
+    transition in zoom out zoom
+    title  "zoom in zoom out"
+  }
+
+  slide {
+    transition out none
+    title "no transition"
+  }
+
 
 
   slide{

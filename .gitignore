@@ -82,7 +82,8 @@ web_modules/
 # Nuxt.js build / generate output
 .nuxt
 !public/reveal/dist
-dist
+dist/
+output/index.html
 
 # Gatsby files
 .cache/

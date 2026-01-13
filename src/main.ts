@@ -6,6 +6,8 @@ import { RevealVisitor } from "./generator/reveal-visitor.js";
 import path from "path";
 import { AssetResolver } from "./generator/asset-resolver.js";
 
+const INPUT_FILE_PATH = "input/demo.sml";
+
 async function resolveAssets(diapo: any, outputDir: string) {
     const resolver = new AssetResolver(outputDir);
 
@@ -27,12 +29,12 @@ async function resolveAssets(diapo: any, outputDir: string) {
 const { shared } = createSlideMLServices();
 
 // Lire le fichier DSL
-const input = fs.readFileSync("input/demo.sml", "utf-8");
+const input = fs.readFileSync(INPUT_FILE_PATH, "utf-8");
 
 // Créer le document Langium
 const document = shared.workspace.LangiumDocumentFactory.fromString(
     input,
-    URI.file("demo.sml")
+    URI.file(INPUT_FILE_PATH.split("/")[INPUT_FILE_PATH.split("/").length - 1] as string)
 );
 
 // Parser (et linker)
@@ -60,7 +62,7 @@ if (!ast) {
 }
 
 // AST → modèle métier
-const diapo = buildDiapo(ast.diapo);
+const diapo = buildDiapo(ast.diapo, path.resolve(INPUT_FILE_PATH));
 
 const isDevMode = process.argv.includes("--dev-mode");
 const outputDir = path.join(process.cwd(), "output");

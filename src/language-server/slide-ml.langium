@@ -1,14 +1,13 @@
 grammar SlideML
 
 // ===== TERMINALS =====
-terminal ML_STRING: 
+terminal ML_STRING:
   '"""' -> '"""'
 ;
 
 terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
-
 
 terminal DIRECTION: 
   'vertical' | 'horizontal'
@@ -22,19 +21,22 @@ StringValue returns string:
   STRING | ML_STRING
 ;
 
-StringBinding:
-  key=STRING '=>' value=STRING;
+UnquotedStringBinding:
+  key=UNQUOTED_NO_SPACES ARROW value=UNQUOTED_NO_SPACES;
 
 // ===== ENTRY =====
 entry Model:
-  (template=Template)?
-  diapo=Diapo
+  diapo=Diapo | templateExport=TemplateExport
 ;
 
 
 // ===== TEMPLATE ======
-Template:
+TemplateDefinitionOrInclude:
   'use' 'template' (definition=TemplateDefinition | include=TemplateInclude);
+
+TemplateExport:
+  'export' 'template' definition=TemplateDefinition
+;
 
 TemplateInclude:
   value=STRING;
@@ -57,31 +59,32 @@ Temp_Header: 'header' '{' value=Component '}';
 
 Temp_Footer: 'footer' '{' value=Component '}';
 
-Temp_Fonts: 'fonts' '{' fontMappings+=StringBinding* '}';
+Temp_Fonts: 'fonts' '{' fontMappings+=UnquotedStringBinding+ '}';
 
-Temp_Colors: 'colors' '{' colorMappings+=StringBinding* '}';
+Temp_Colors: 'colors' '{' colorMappings+=UnquotedStringBinding+ '}';
 
-Temp_Background: 'background' '=>' backgroundValue=STRING;
+Temp_Background: 'background' ARROW backgroundValue=STRING;
 
-Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=StringBinding* '}';
+Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
 
-Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping* '}';
+Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 
 SizeMapping:
-  key=STRING '=>' value=SizeEnum;
+  key=UNQUOTED_NO_SPACES ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
 
 SizeEnum returns string:
   'XL' | 'L' | 'M' | 'S' | 'XS'
 ;
+
 Diapo:
   'diapo' '{'
+    template=TemplateDefinitionOrInclude?
     annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
-
 
 AbstractSlide:
   Slide | NestedSlide
@@ -105,35 +108,73 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue
+  'text' value=StringValue actionBlock=ActionBlock?
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
-  'image' src=STRING ('alt' alt=STRING)?
+  'image' src=STRING ('alt' alt=STRING)? actionBlock=ActionBlock?
 ;
 
 CodeComponent:
-  'code'
-  value=STRING
+    'code'
+    'language' language=UNQUOTED_NO_SPACES
+    value=STRING
+    actionBlock=ActionBlock?
 ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
+    actionBlock=ActionBlock?
   '}'
+;
+
+ActionBlock:
+  '{' actions+=Action* '}'
+;
+
+Action:
+  DisplayAction | HideAction | HighlightAction | ReplaceAction
+;
+
+DisplayAction:
+  'display' ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+HideAction:
+  'hide' ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+HighlightAction:
+  'highlight' 'lines' range=LineRange ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+ReplaceAction:
+  'replace' 'by' update=STRING ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+LineRange:
+  start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
 
 LatexComponent:
   'latex' formula=StringValue
+  actionBlock=ActionBlock?
 ;
 
 TitleComponent:
   'title' text=STRING
+  actionBlock=ActionBlock?
 ;
+
+terminal ARROW:
+  '=>';
+terminal UNQUOTED_NO_SPACES:
+  /[^\s\r\n]+/;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;

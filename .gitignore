@@ -82,7 +82,7 @@ web_modules/
 # Nuxt.js build / generate output
 .nuxt
 !public/reveal/dist
-
+dist
 
 # Gatsby files
 .cache/

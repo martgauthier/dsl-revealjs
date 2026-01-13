@@ -66,7 +66,7 @@ Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
 Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 
 SizeMapping:
-  key=STRING ARROW value=SizeEnum;
+  key=UNQUOTED_NO_SPACES ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
 

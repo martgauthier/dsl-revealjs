@@ -69,6 +69,20 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
       fonts[pair.key] = pair.value;
     });
     template.fonts = fonts;
+  },
+  "Temp_FontSizes": (section: any, template: Template) => {
+    let fontSizes: Record<any, any> = {};
+    section.fontSizeMappings.forEach((pair: any) => {
+      fontSizes[pair.key] = pair.value;
+    });
+    template.fontSizes = fontSizes;
+  },
+  "Temp_Dimensions": (section: any, template: Template) => {
+    let dimensions: Record<any, any> = {};
+    section.dimensionMappings.forEach((pair: any) => {
+      dimensions[pair.key] = pair.value;
+    });
+    template.dimensions = dimensions;
   }
 }
 

@@ -117,7 +117,7 @@ ImageComponent:
 
 CodeComponent:
     'code'
-    'language' language=ID
+    'language' language=UNQUOTED_NO_SPACES
     value=STRING
     actionBlock=ActionBlock?
 ;
@@ -175,3 +175,7 @@ hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
+terminal ARROW:
+  '=>';
+terminal UNQUOTED_NO_SPACES:
+  /[^\s\r\n]+/;

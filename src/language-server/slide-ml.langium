@@ -108,7 +108,11 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue actionBlock=ActionBlock?
+  'text' value=StringValue color=TextColorPrecision? actionBlock=ActionBlock?
+;
+
+TextColorPrecision:
+  '[' color=UNQUOTED_NO_SPACES ']'
 ;
 
 VideoComponent:
@@ -167,14 +171,16 @@ LatexComponent:
 ;
 
 TitleComponent:
-  'title' text=STRING
+  'title' text=STRING color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 terminal ARROW:
   '=>';
+
 terminal UNQUOTED_NO_SPACES:
-  /[^\s\r\n]+/;
+    /[^\s\[\]]+/
+;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;

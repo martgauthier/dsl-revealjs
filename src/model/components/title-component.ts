@@ -6,7 +6,7 @@ import type {Action} from "../actions/action.abstract.js";
 
 
 export class TitleComponent extends Component implements Visitable {
-    constructor(public text: String, size:Size = Size.DEFAULT, actions: Action[]){
+    constructor(public text: String, public color: string | undefined, size:Size = Size.DEFAULT, actions: Action[]){
         super(size, actions);
     }
 

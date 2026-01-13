@@ -142,27 +142,23 @@ Action:
 ;
 
 DisplayAction:
-  'display' ('in' 'step' step=INT)?
+  'display' ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 HideAction:
-  'hide' ('in' 'step' step=INT)?
+  'hide' ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 HighlightAction:
-  'highlight' 'lines' range=LineRange ('in' 'step' step=INT)?
+  'highlight' 'lines' range=LineRange ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 ReplaceAction:
-  'replace' 'by' update=STRING ('in' 'step' step=INT)?
+  'replace' 'by' update=STRING ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 LineRange:
-  start=INT ('-' end=INT)?
-;
-
-terminal INT returns number:
-  /[0-9]+/
+  start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
 
 LatexComponent:
@@ -175,11 +171,12 @@ TitleComponent:
   actionBlock=ActionBlock?
 ;
 
-hidden terminal WS: /\s+/;
-hidden terminal NEWLINE: /\r?\n/;
-hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
-hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
 terminal ARROW:
   '=>';
 terminal UNQUOTED_NO_SPACES:
   /[^\s\r\n]+/;
+
+hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
+hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
+hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

@@ -3,7 +3,9 @@ import type { Visitor } from "../model/visitor.js";
 import { Diapo } from "../model/diapo.js";
 import { Slide } from "../model/slide.js";
 import { TextComponent } from "../model/components/text-component.js";
-import { HighlightAction } from "../model/actions/highlight-action.js";
+import type { HighlightAction } from "../model/actions/highlight-action.js";
+import type { DisplayAction } from "../model/actions/display-action.js";
+import type { ReplaceAction } from "../model/actions/replace-action.js";
 import { HideAction } from "../model/actions/hide-action.js";
 import type { CodeComponent } from "../model/components/code-component.js";
 import { marked } from "marked";
@@ -15,10 +17,14 @@ import { Direction } from "../model/enums/direction.enum.js";
 import type {Action} from "../model/actions/action.abstract.js";
 import {DisplayAction} from "../model/actions/display-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
+import type {LatexComponent} from "../model/components/latex-component.js";
+import type {TitleComponent} from "../model/components/title-component.js";
+import {Size} from "../model/enums/size.enum.js";
 
 export class RevealVisitor implements Visitor {
+  constructor(public devServerMode: boolean = false) {}
 
-
+  private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
@@ -33,41 +39,53 @@ export class RevealVisitor implements Visitor {
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Reveal DSL</title>
+  <meta charset="utf-8">
+  <title>Reveal DSL</title>
+  <link rel="stylesheet" href="./public/reveal/dist/reveal.css">
+  <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
+  <script src="./public/reveal/dist/reveal.js"></script>
+  <script src="./public/reveal/plugin/highlight/highlight.js"></script>
+  <script src="./public/mathjax/tex-chtml.js"></script>
+  
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    
-    <style>
-        :root {
-            --r-block-margin: 20px;
-            --r-code-font: monospace;
-        }
-        .reveal ul {
-          display: inline-block;
-          text-align: left;
-        }
-       
-        .vertical-frame {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-    
-        .horizontal-frame {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          justify-items: center;
-          gap: 10px;
-        }
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
+  ${this.annotationsEnabled ?
+        `<!-- Font awesome is required for the chalkboard plugin -->
+        <script src="./public/fontawesome/js/all.min.js"></script>
+        <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
+        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+        <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+        <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+        <!-- Chalkboard plugin -->
+        <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+        <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
+
+  
+  <style>
+  :root {
+        --r-block-margin: 20px;
+        --r-code-font: monospace;
+    }
         
-        .reveal pre {
+    .reveal ul {
+      display: inline-block;
+      text-align: left;
+    }
+    
+    .vertical-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .horizontal-frame {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+    .reveal pre {
             display: block;
             position: relative;
             width: 90%;
@@ -101,7 +119,8 @@ export class RevealVisitor implements Visitor {
         .reveal .code-wrapper code {
             white-space: pre;
         }
-    </style>
+  </style>
+
 </head>
 <body>
 
@@ -206,19 +225,59 @@ Reveal.on('fragmenthidden', e => {
 </script>
 
 <script>
-    Reveal.initialize({
-        hash: true,
-        slideNumber: true,
-        plugins: [ RevealHighlight ]
+  Reveal.initialize({
+      ${this.annotationsEnabled ?
+    `customcontrols: {
+        controls: [
+          { icon: '<i class="fa fa-pen-square"></i>',
+            title: 'Tableau à craie (B)',
+            action: 'RevealChalkboard.toggleChalkboard();'
+          },
+          { icon: '<i class="fa fa-pen"></i>',
+            title: 'Prendre des notes (C)',
+            action: 'RevealChalkboard.toggleNotesCanvas();'
+          }
+        ]
+      },
+      chalkboard: {},` : ''}
+      plugins: [ 
+          RevealHighlight,
+          ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
+      ],
+      hash: true,
+      slideNumber: true
     });
 </script>
+${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
+
 </body>
 </html>
     `;
   }
 
+  normalizeMultiline(text: string): string {
+    // enlever les """ au début et à la fin
+    let result = text.replace(/^"""/, '').replace(/"""$/, '');
+
+    const lines = result.split('\n');
+    if (lines.length === 0) return text;
+
+    // enlever lignes vides début / fin
+    while (lines.length && lines[0]!.trim() === '') lines.shift();
+    while (lines.length && lines[lines.length - 1]!.trim() === '') lines.pop();
+
+    // détecter indentation minimale
+    const indent = Math.min(
+      ...lines
+        .filter(l => l.trim().length > 0)
+        .map(l => l.match(/^ */)?.[0].length ?? 0)
+    );
+
+    return lines.map(l => l.slice(indent)).join('\n');
+  }
 
   visitDiapo(diapo: Diapo): void {
+    this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;
       slide.accept(this);
@@ -263,9 +322,10 @@ Reveal.on('fragmenthidden', e => {
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
 
     const id = `text-${this.textIdCounter++}`;
-
+    const normalized = this.normalizeMultiline(textComponent.textContent);
+    const html = marked.parse(normalized) as string;
     const baseHtml =
-        `<p id="${id}">${marked.parseInline(textComponent.textContent)}</p>`;
+        `<p id="${id}">${html}</p>`;
 
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -396,35 +456,33 @@ Reveal.on('fragmenthidden', e => {
     this.currentSlideContent.push(fragments);
   }
 
-
-
   visitTemplate(): void { }
-  visitCodeComponent(codeComponent: CodeComponent): void {
+    visitCodeComponent(codeComponent: CodeComponent): void {
 
-    const highlights = codeComponent.actions
-        .filter(a => a instanceof HighlightAction)
-        .sort((a, b) => a.step - b.step) as HighlightAction[];
+        const highlights = codeComponent.actions
+            .filter(a => a instanceof HighlightAction)
+            .sort((a, b) => a.step - b.step) as HighlightAction[];
 
-    let highlights2 = highlights;
-    const dataLineNumbers = highlights.map(h => {
-      if (h.startLine === h.endLine) {
-        return `${h.startLine}`;
-      }
-      return `${h.startLine}-${h.endLine}`;
-    });
+        let highlights2 = highlights;
+        const dataLineNumbers = highlights.map(h => {
+            if (h.startLine === h.endLine) {
+                return `${h.startLine}`;
+            }
+            return `${h.startLine}-${h.endLine}`;
+        });
 
-    const dataLineNumbersJoined =
-        dataLineNumbers.length > 0
-            ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
+        const dataLineNumbersJoined =
+            dataLineNumbers.length > 0
+                ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
+                : "";
+
+        const dataFragmentIndexes = highlights2.map(h => {
+            return h.step-1;
+        });
+        const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
+            ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
             : "";
-
-    const dataFragmentIndexes = highlights2.map(h => {
-      return h.step-1;
-    });
-    const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
-        ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
-        : "";
-    const content = `
+        const content = `
 <pre>
   <code class="language-${codeComponent.language}"
         data-trim
@@ -434,16 +492,16 @@ ${codeComponent.content}
 </pre>
 `;
 
-    const display = codeComponent.actions.find(a => a instanceof DisplayAction);
-    const hide = codeComponent.actions.find(a => a instanceof HideAction);
+        const display = codeComponent.actions.find(a => a instanceof DisplayAction);
+        const hide = codeComponent.actions.find(a => a instanceof HideAction);
 
-    this.currentSlideContent.push(
-        this.renderFragments(
-            content,
-            [display, hide].filter(Boolean) as Action[]
-        )
-    );
-  }
+        this.currentSlideContent.push(
+            this.renderFragments(
+                content,
+                [display, hide].filter(Boolean) as Action[]
+            )
+        );
+    }
 
 
   private renderFragments(
@@ -503,5 +561,34 @@ ${codeComponent.content}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
   visitReplaceAction(replaceAction: ReplaceAction) {}
-
+    visitLatexComponent(latexComponent: LatexComponent): void {
+        const formula = this.normalizeMultiline(latexComponent.formula);
+        this.currentSlideContent.push(`
+    <div>
+      \\[
+        ${formula}
+      \\]
+    </div>
+    `);
+    }
+  visitTitleComponent(titleComponent: TitleComponent) {
+    let titleNumber = "1"; // Size.DEFAULT
+    switch (titleComponent.size) {
+      case Size.XL:
+        titleNumber = "1";
+        break;
+      case Size.L:
+        titleNumber = "2";
+        break;
+      case Size.M:
+        titleNumber = "3";
+        break;
+      case Size.S:
+        titleNumber = "4";
+        break;
+      case Size.XS:
+        titleNumber = "5";
+    }
+    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+  }
 }

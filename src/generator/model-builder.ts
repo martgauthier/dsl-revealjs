@@ -4,11 +4,13 @@ import {TextComponent} from "../model/components/text-component.js";
 import {Size} from "../model/enums/size.enum.js";
 import {VideoComponent} from "../model/components/video-component.js";
 import {ImageComponent} from "../model/components/image-component.js";
+import { LatexComponent } from "../model/components/latex-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
+import {TitleComponent} from "../model/components/title-component.js";
 import {DisplayAction} from "../model/actions/display-action.js";
 import type {Action} from "../model/actions/action.abstract.js";
 import {HideAction} from "../model/actions/hide-action.js";
@@ -19,11 +21,11 @@ type ComponentBuilder = (ast:any) => Component;
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, Size.DEFAULT,buildActions(ast.actionBlock));
+    return new TextComponent(ast.value, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay, Size.DEFAULT,buildActions(ast.actionBlock)),
-  ImageComponent: (ast) => new ImageComponent(ast.src, Size.DEFAULT,buildActions(ast.actionBlock),ast.alt),
-  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, Size.DEFAULT,buildActions(ast.actionBlock)),
+  VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
+  ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
+  CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   FrameComponent: (ast) => {
     const components = ast.components.map((c: any) => {
       const builder = COMPONENT_BUILDERS[c.$type];
@@ -33,7 +35,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
       return builder(c);
     });
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
-    return new FrameComponent(components, direction, Size.DEFAULT,buildActions(ast.actionBlock));
+    return new FrameComponent(components, direction,sizeConverter(ast.size), buildActions(ast.actionBlock));
   }
 }
 
@@ -48,7 +50,7 @@ export function buildDiapo(diapoAst: any): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
-  return new Diapo(slides);
+  return new Diapo(slides, undefined, diapoAst.annotationsEnabled ?? false);
 }
 
 function buildSlide(slideAst: any): Slide {
@@ -125,3 +127,20 @@ function dedent(text: string): string {
   return lines.map(l => l.slice(indent)).join("\n");
 }
 
+function sizeConverter(size : string | undefined) : Size{
+  if(size){
+    switch (size) {
+      case "XS":
+        return Size.XS;
+      case "S":
+        return Size.S;
+      case "M":
+        return Size.M;
+      case "L":
+        return Size.L;
+      case "XL":
+        return Size.XL
+    }
+  }
+  return Size.DEFAULT;
+}

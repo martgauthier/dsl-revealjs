@@ -78,10 +78,10 @@ web_modules/
 
 # Next.js build output
 .next
-out
 
 # Nuxt.js build / generate output
 .nuxt
+!public/reveal/dist
 dist
 
 # Gatsby files
@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 index.html
 src/input/
 src/language-server/generated/
+media/
+assets/

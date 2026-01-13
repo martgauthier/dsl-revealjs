@@ -11,6 +11,8 @@ import type {DisplayAction} from "./actions/display-action.js";
 import type {HighlightAction} from "./actions/highlight-action.js";
 import type { NestedSlide } from "./nestedSlide.js";
 import type {ReplaceAction} from "./actions/replace-action.js";
+import type { LatexComponent } from "./components/latex-component.js";
+import type {TitleComponent} from "./components/title-component.js";
 
 export interface Visitor {
     visitTemplate(template: Template): void;
@@ -38,4 +40,8 @@ export interface Visitor {
     visitCodeHighlightAction(codeHighlightAction: HighlightAction): void;
 
     visitReplaceAction(replaceAction: ReplaceAction): void;
+
+    visitLatexComponent(latexComponent: LatexComponent): void;
+
+    visitTitleComponent(titleComponent: TitleComponent): void;
 }

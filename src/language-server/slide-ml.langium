@@ -1,6 +1,10 @@
 grammar SlideML
 
 // ===== TERMINALS =====
+terminal ML_STRING:
+  '"""' -> '"""'
+;
+
 terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
@@ -9,14 +13,14 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
-;
-
-terminal SizeEnum:
-  'XS' | 'S'  | 'M' | 'L' | 'XL';
+terminal AnnotationsEnabled:
+  'enable annotations';
 
 // ===== UTILITIES =====
+StringValue returns string:
+  STRING | ML_STRING
+;
+
 StringBinding:
   key=STRING '=>' value=STRING;
 
@@ -66,8 +70,14 @@ SizeMapping:
   key=STRING '=>' value=SizeEnum;
 
 // ===== STRUCTURE =====
+
+SizeEnum returns string:
+  'XL' | 'L' | 'M' | 'S' | 'XS'
+;
+
 Diapo:
   'diapo' '{'
+    annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
@@ -76,29 +86,29 @@ AbstractSlide:
   Slide | NestedSlide
 ;
 
-Slide:
-  'slide' '{'
-    components+=Component*
-  '}'
-;
-
 NestedSlide:
   'nestedSlide' '{'
     subSlides+=Slide*
   '}'
 ;
 
+Slide:
+  'slide' '{'
+    components+=Component*
+  '}'
+;
+
 Component:
-  TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent
+  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
 ;
 
 TextComponent:
-  'text' value=STRING actionBlock=ActionBlock?
+  'text' value=StringValue actionBlock=ActionBlock?
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
@@ -151,6 +161,17 @@ terminal INT returns number:
   /[0-9]+/
 ;
 
+LatexComponent:
+  'latex' formula=StringValue
+  actionBlock=ActionBlock?
+;
+
+TitleComponent:
+  'title' text=STRING
+  actionBlock=ActionBlock?
+;
+
 hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

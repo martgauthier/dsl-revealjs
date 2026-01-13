@@ -14,10 +14,8 @@ terminal DIRECTION:
   'vertical' | 'horizontal'
 ;
 
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
-;
-
+terminal AnnotationsEnabled:
+  'enable annotations';
 
 // ===== UTILITIES =====
 StringValue returns string:
@@ -79,10 +77,11 @@ SizeEnum returns string:
 ;
 Diapo:
   'diapo' '{'
-    annotationsEnabled=('enable annotations')?
+    annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
+
 
 AbstractSlide:
   Slide | NestedSlide
@@ -110,7 +109,7 @@ TextComponent:
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')?
 ;
 
 ImageComponent:
@@ -119,7 +118,6 @@ ImageComponent:
 
 CodeComponent:
   'code'
-  'language' language=ID
   value=STRING
 ;
 
@@ -138,5 +136,6 @@ TitleComponent:
 ;
 
 hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

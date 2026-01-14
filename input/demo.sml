@@ -1,4 +1,4 @@
-diapo {
+diapo "DSL Demo" {
   use template "./template_export.sml"
 
   slide {
@@ -37,5 +37,7 @@ diapo {
     highlight lines 2 in step 2
     highlight lines 3 in step 3
     highlight lines 4 in step 4
+    }
   }
+
 }

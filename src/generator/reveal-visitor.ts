@@ -24,6 +24,7 @@ export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
 
   diapoTitle : String = "";
+  pageNumberingEnabled : boolean = false;
   private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
@@ -268,7 +269,7 @@ Reveal.on('fragmenthidden', e => {
           ${this.annotationsEnabled ? `RevealChalkboard, RevealCustomControls` : ""} 
       ],
       hash: true,
-      slideNumber: true
+      slideNumber: ${this.pageNumberingEnabled ? `true` : `false`}
     });
 </script>
 ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
@@ -304,6 +305,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
       diapo.template.accept(this);
     }
     this.diapoTitle = diapo.title;
+    this.pageNumberingEnabled = diapo.pageNumbering;
     this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;

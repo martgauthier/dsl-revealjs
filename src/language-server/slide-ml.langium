@@ -16,6 +16,9 @@ terminal DIRECTION:
 terminal AnnotationsEnabled:
   'enable annotations';
 
+terminal PageNumberingEnabled:
+  'enable page numbering';
+
 // ===== UTILITIES =====
 StringValue returns string:
   STRING | ML_STRING
@@ -82,6 +85,7 @@ Diapo:
   'diapo' title=StringValue? '{'
     template=TemplateDefinitionOrInclude?
     annotationsEnabled=AnnotationsEnabled?
+    pageNumbering=PageNumberingEnabled?
     slides+=AbstractSlide*
   '}'
 ;

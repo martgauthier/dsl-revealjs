@@ -16,6 +16,7 @@ import type {Action} from "../model/actions/action.abstract.js";
 import {DisplayAction} from "../model/actions/display-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
 import type {LatexComponent} from "../model/components/latex-component.js";
+import type { Template } from "../model/template.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
 import type {PlotComponent} from "../model/components/plot-component.js";
@@ -27,6 +28,10 @@ export class RevealVisitor implements Visitor {
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
   private isNestedSlide: boolean = false;
+  hasTemplate: boolean = false;
+  templateStyle: string = "";
+  templateHeader: string = "";
+  templateFooter: string = "";
 
   private textIdCounter = 0;
   private imageIdCounter = 0;
@@ -119,15 +124,34 @@ export class RevealVisitor implements Visitor {
         .reveal .code-wrapper code {
             white-space: pre;
         }
+
+    .template-header, .template-footer {
+      position: absolute;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-height: 15%;
+    }
+
+    .template-header {
+      top: 0;
+    }
+    .template-footer {
+      bottom: 0;
+    }
+    ${this.templateStyle}
   </style>
 
 </head>
 <body>
 
 <div class="reveal">
+  ${this.hasTemplate ? `<div class="template-header">${this.templateHeader}</div>` : ""}
   <div class="slides">
     ${this.slidesHtml.join("\n")}
   </div>
+  ${this.hasTemplate ? `<div class="template-footer">${this.templateFooter}</div>` : ""}
 </div>
 
 <!-- Reveal JS -->
@@ -277,6 +301,9 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   visitDiapo(diapo: Diapo): void {
+    if(diapo.template){
+      diapo.template.accept(this);
+    }
     this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;
@@ -293,7 +320,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section>
+              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
                 ${this.currentSlideContent.join("\n")}
               </section>`
           );
@@ -308,7 +335,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const subslide of nestedSlide.subSlides) {
       subslide.accept(this);
       const subSlideContent =
-          `<section>
+          `<section ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
           </section>`;
       nestedSlidesContent.push(subSlideContent);
@@ -320,15 +347,18 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
-
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parseInline(normalized) as string;
     console.log("norm", normalized);
     console.log("html", html);
 
-    const baseHtml =
-        `<p id="${id}">${html}</p>`;
+    let baseHtml;
+    if(textComponent.color) {
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${html}</p>`;
+    } else {
+      baseHtml = `<p id="${id}">${html}</p>`;
+    }
 
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -459,53 +489,89 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     this.currentSlideContent.push(fragments);
   }
 
-  visitTemplate(): void { }
-    visitCodeComponent(codeComponent: CodeComponent): void {
+  visitTemplate(template: Template): void {
+    this.hasTemplate = true;
+    let templateStyle = "";
+    if(template.fonts){
+      for(const tag in template.fonts){
+        templateStyle += `${tag} { font-family: ${template.fonts[tag]}; }\n`;
+      }
+    }
+    if(template.colors){
+      for(const tag in template.colors){
+        templateStyle += `${tag} { color: ${template.colors[tag]}; }\n`;
+      }
+    }
+    if(template.fontSizes){
+      for(const tag in template.fontSizes){
+        templateStyle += `${tag} { font-size: ${template.fontSizes[tag]}; }\n`;
+      }
+    }
+    if(template.dimensions){
+      for(const tag in template.dimensions){
+        let sizeValue = template.dimensions[tag]?.valueOf;
+        templateStyle += `${tag} { width: ${sizeValue}; height: ${sizeValue}; }\n`;
+      }
+    }
+    if(template.background){
+      templateStyle += `.slide { background: ${template.background}; }\n`;
+    }
+    this.templateStyle = templateStyle;
 
-        const highlights = codeComponent.actions
-            .filter(a => a instanceof HighlightAction)
-            .sort((a, b) => a.step - b.step) as HighlightAction[];
+    if(template.header){
+      template.header.accept(this);
+      this.templateHeader = this.currentSlideContent.pop() || "";
+    }
+    if(template.footer){
+      template.footer.accept(this);
+      this.templateFooter = this.currentSlideContent.pop() || "";
+    }
+  }
 
-        let highlights2 = highlights;
-        const dataLineNumbers = highlights.map(h => {
-            if (h.startLine === h.endLine) {
-                return `${h.startLine}`;
-            }
-            return `${h.startLine}-${h.endLine}`;
-        });
+  visitCodeComponent(codeComponent: CodeComponent): void {
+    const highlights = codeComponent.actions
+        .filter(a => a instanceof HighlightAction)
+        .sort((a, b) => a.step - b.step) as HighlightAction[];
 
-        const dataLineNumbersJoined =
-            dataLineNumbers.length > 0
-                ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
-                : "";
+    let highlights2 = highlights;
+    const dataLineNumbers = highlights.map(h => {
+        if (h.startLine === h.endLine) {
+            return `${h.startLine}`;
+        }
+        return `${h.startLine}-${h.endLine}`;
+    });
 
-        const dataFragmentIndexes = highlights2.map(h => {
-            return h.step-1;
-        });
-        const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
-            ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
+    const dataLineNumbersJoined =
+        dataLineNumbers.length > 0
+            ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
             : "";
-        const content = `
+
+    const dataFragmentIndexes = highlights2.map(h => {
+        return h.step-1;
+    });
+    const dataFragmentIndexesJoined = dataFragmentIndexes.length > 0
+        ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
+        : "";
+    const content = `
 <pre>
-  <code class="language-${codeComponent.language}"
-        data-trim
-        ${dataLineNumbersJoined} ${dataFragmentIndexesJoined}>
+<code class="language-${codeComponent.language}"
+    data-trim
+    ${dataLineNumbersJoined} ${dataFragmentIndexesJoined}>
 ${codeComponent.content}
-  </code>
+</code>
 </pre>
 `;
 
-        const display = codeComponent.actions.find(a => a instanceof DisplayAction);
-        const hide = codeComponent.actions.find(a => a instanceof HideAction);
+    const display = codeComponent.actions.find(a => a instanceof DisplayAction);
+    const hide = codeComponent.actions.find(a => a instanceof HideAction);
 
-        this.currentSlideContent.push(
-            this.renderFragments(
-                content,
-                [display, hide].filter(Boolean) as Action[]
-            )
-        );
-    }
-
+    this.currentSlideContent.push(
+        this.renderFragments(
+            content,
+            [display, hide].filter(Boolean) as Action[]
+        )
+    );
+  }
 
   private renderFragments(
       content: string,
@@ -564,16 +630,30 @@ ${codeComponent.content}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
   visitReplaceAction(replaceAction: ReplaceAction) {}
-    visitLatexComponent(latexComponent: LatexComponent): void {
-        const formula = this.normalizeMultiline(latexComponent.formula);
+
+  visitLatexComponent(latexComponent: LatexComponent): void {
+      const formula = this.normalizeMultiline(latexComponent.formula);
+
+      if(latexComponent.color) {
         this.currentSlideContent.push(`
-    <div>
-      \\[
-        ${formula}
-      \\]
-    </div>
-    `);
-    }
+  <div style="color: ${latexComponent.color};">
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+      else {
+      this.currentSlideContent.push(`
+  <div>
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+  }
+
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {
@@ -592,7 +672,12 @@ ${codeComponent.content}
       case Size.XS:
         titleNumber = "5";
     }
-    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    if(titleComponent.color) {
+      this.currentSlideContent.push(`<h${titleNumber} style="color: ${titleComponent.color};">${titleComponent.text}</h${titleNumber}>`);
+    }
+    else {
+      this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    }
   }
 
     visitPlotComponent(plot: PlotComponent): void {

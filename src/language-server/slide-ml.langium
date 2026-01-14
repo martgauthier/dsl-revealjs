@@ -21,19 +21,22 @@ StringValue returns string:
   STRING | ML_STRING
 ;
 
-StringBinding:
-  key=STRING '=>' value=STRING;
+UnquotedStringBinding:
+  key=UNQUOTED_NO_SPACES ARROW value=UNQUOTED_NO_SPACES;
 
 // ===== ENTRY =====
 entry Model:
-  (template=Template)?
-  diapo=Diapo
+  diapo=Diapo | templateExport=TemplateExport
 ;
 
 
 // ===== TEMPLATE ======
-Template:
+TemplateDefinitionOrInclude:
   'use' 'template' (definition=TemplateDefinition | include=TemplateInclude);
+
+TemplateExport:
+  'export' 'template' definition=TemplateDefinition
+;
 
 TemplateInclude:
   value=STRING;
@@ -56,18 +59,18 @@ Temp_Header: 'header' '{' value=Component '}';
 
 Temp_Footer: 'footer' '{' value=Component '}';
 
-Temp_Fonts: 'fonts' '{' fontMappings+=StringBinding* '}';
+Temp_Fonts: 'fonts' '{' fontMappings+=UnquotedStringBinding+ '}';
 
-Temp_Colors: 'colors' '{' colorMappings+=StringBinding* '}';
+Temp_Colors: 'colors' '{' colorMappings+=UnquotedStringBinding+ '}';
 
-Temp_Background: 'background' '=>' backgroundValue=STRING;
+Temp_Background: 'background' ARROW backgroundValue=STRING;
 
-Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=StringBinding* '}';
+Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
 
-Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping* '}';
+Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 
 SizeMapping:
-  key=STRING '=>' value=SizeEnum;
+  key=UNQUOTED_NO_SPACES ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
 
@@ -77,6 +80,7 @@ SizeEnum returns string:
 
 Diapo:
   'diapo' '{'
+    template=TemplateDefinitionOrInclude?
     annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
@@ -104,7 +108,11 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue actionBlock=ActionBlock?
+  'text' value=StringValue color=TextColorPrecision? actionBlock=ActionBlock?
+;
+
+TextColorPrecision:
+  '[' color=UNQUOTED_NO_SPACES ']'
 ;
 
 VideoComponent:
@@ -195,19 +203,23 @@ LineRange:
 
 LatexComponent:
   'latex' formula=StringValue
+  color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 TitleComponent:
-  'title' text=STRING
+  'title' text=STRING color=TextColorPrecision?
   actionBlock=ActionBlock?
+;
+
+terminal ARROW:
+  '=>';
+
+terminal UNQUOTED_NO_SPACES:
+    /[^\s\[\]]+/
 ;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
-terminal ARROW:
-  '=>';
-terminal UNQUOTED_NO_SPACES:
-  /[^\s\r\n]+/;

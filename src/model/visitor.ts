@@ -13,6 +13,7 @@ import type { NestedSlide } from "./nestedSlide.js";
 import type {ReplaceAction} from "./actions/replace-action.js";
 import type { LatexComponent } from "./components/latex-component.js";
 import type {TitleComponent} from "./components/title-component.js";
+import type {PlotComponent} from "./components/plot-component.js";
 
 export interface Visitor {
     visitTemplate(template: Template): void;
@@ -44,4 +45,6 @@ export interface Visitor {
     visitLatexComponent(latexComponent: LatexComponent): void;
 
     visitTitleComponent(titleComponent: TitleComponent): void;
+
+    visitPlotComponent(plotComponent : PlotComponent): void;
 }

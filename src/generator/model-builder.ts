@@ -16,6 +16,7 @@ import type {Action} from "../model/actions/action.abstract.js";
 import {HideAction} from "../model/actions/hide-action.js";
 import {HighlightAction} from "../model/actions/highlight-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
+import {PlotComponent} from "../model/components/plot-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -23,6 +24,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
     return new TextComponent(ast.value, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
+  PlotComponent: (ast) => { return buildPlotComponent(ast)},
   TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
   ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
@@ -112,6 +114,46 @@ function buildActions(actionBlockAst: any): Action[] {
   });
 }
 
+function buildPlotComponent(ast : any ){
+  const functions: string[] = [];
+  let domain: [number, number] | [any, any] = [-10, 10];
+  let samples = 300;
+  let xUnit = "";
+  let yUnit = "";
+
+  for (const prop of ast.properties ?? []) {
+    switch (prop.$type) {
+      case "PlotFunction":
+        functions.push(prop.value);
+        break;
+
+      case "PlotDomain":
+        domain = [prop.min, prop.max];
+        break;
+
+      case "PlotSamples":
+        samples = prop.value;
+        break;
+
+      case "PlotXUnit":
+        xUnit = prop.value;
+        break;
+
+      case "PlotYUnit":
+        yUnit = prop.value;
+        break;
+    }
+  }
+  return new PlotComponent(
+      functions,
+      domain,
+      samples,
+      xUnit,
+      yUnit,
+      sizeConverter(ast.size),
+      buildActions(ast.actionBlock)
+  );
+}
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");

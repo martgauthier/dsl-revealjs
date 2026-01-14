@@ -99,8 +99,8 @@ Slide:
 ;
 
 Component:
-  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
+  (TextComponent | PlotComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent ) size=SizeEnum?
 ;
 
 TextComponent:
@@ -122,6 +122,41 @@ CodeComponent:
     actionBlock=ActionBlock?
 ;
 
+PlotComponent:
+    'plot' '{'
+      properties+=PlotProperty*
+    '}'
+    actionBlock=ActionBlock?
+  ;
+
+PlotProperty
+  : PlotFunction
+  | PlotDomain
+  | PlotSamples
+  | PlotXUnit
+  | PlotYUnit
+  ;
+
+PlotFunction
+  : 'function' value=STRING
+  ;
+
+PlotDomain
+  : 'domain' '[' min=UNQUOTED_NO_SPACES ',' max=UNQUOTED_NO_SPACES ']'
+  ;
+
+PlotSamples
+  : 'samples' value=UNQUOTED_NO_SPACES
+  ;
+
+PlotXUnit
+  : 'xUnit' value=STRING
+  ;
+
+PlotYUnit
+  : 'yUnit' value=STRING
+  ;
+
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
@@ -138,28 +173,25 @@ Action:
 ;
 
 DisplayAction:
-  'display' ('in' 'step' step=INT)?
+  'display' ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 HideAction:
-  'hide' ('in' 'step' step=INT)?
+  'hide' ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 HighlightAction:
-  'highlight' 'lines' range=LineRange ('in' 'step' step=INT)?
+  'highlight' 'lines' range=LineRange ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 ReplaceAction:
-  'replace' 'by' update=STRING ('in' 'step' step=INT)?
+  'replace' 'by' update=STRING ('in' 'step' step=UNQUOTED_NO_SPACES)?
 ;
 
 LineRange:
-  start=INT ('-' end=INT)?
+  start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
 
-terminal INT returns number:
-  /[0-9]+/
-;
 
 LatexComponent:
   'latex' formula=StringValue

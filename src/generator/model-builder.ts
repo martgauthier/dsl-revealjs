@@ -26,9 +26,9 @@ let PROCESSED_FILE_PATH: string = "";
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, sizeConverter(ast.size), buildActions(ast.actionBlock));
+    return new TextComponent(ast.value, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size), buildActions(ast.actionBlock)),
+  TitleComponent: (ast) => new TitleComponent(ast.text, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
   ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
   CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size), buildActions(ast.actionBlock)),

@@ -345,15 +345,18 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
-
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parseInline(normalized) as string;
     console.log("norm", normalized);
     console.log("html", html);
 
-    const baseHtml =
-        `<p id="${id}">${html}</p>`;
+    let baseHtml;
+    if(textComponent.color) {
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${html}</p>`;
+    } else {
+      baseHtml = `<p id="${id}">${html}</p>`;
+    }
 
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -653,6 +656,11 @@ ${codeComponent.content}
       case Size.XS:
         titleNumber = "5";
     }
-    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    if(titleComponent.color) {
+      this.currentSlideContent.push(`<h${titleNumber} style="color: ${titleComponent.color};">${titleComponent.text}</h${titleNumber}>`);
+    }
+    else {
+      this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    }
   }
 }

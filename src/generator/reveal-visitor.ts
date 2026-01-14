@@ -628,16 +628,30 @@ ${codeComponent.content}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
   visitReplaceAction(replaceAction: ReplaceAction) {}
-    visitLatexComponent(latexComponent: LatexComponent): void {
-        const formula = this.normalizeMultiline(latexComponent.formula);
+
+  visitLatexComponent(latexComponent: LatexComponent): void {
+      const formula = this.normalizeMultiline(latexComponent.formula);
+
+      if(latexComponent.color) {
         this.currentSlideContent.push(`
-    <div>
-      \\[
-        ${formula}
-      \\]
-    </div>
-    `);
-    }
+  <div style="color: ${latexComponent.color};">
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+      else {
+      this.currentSlideContent.push(`
+  <div>
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+  }
+
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {

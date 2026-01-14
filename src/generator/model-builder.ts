@@ -43,7 +43,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
     return new FrameComponent(components, direction, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT, buildActions(ast.actionBlock))
+  LatexComponent: (ast) => new LatexComponent(ast.formula, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock))
 }
 
 const TEMPLATE_BUILDERS : Record<string, any> = {

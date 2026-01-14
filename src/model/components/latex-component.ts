@@ -6,6 +6,7 @@ import type {Action} from "../actions/action.abstract.js";
 export class LatexComponent extends Component {
   constructor(
     public formula: string,
+    public color: string | undefined, 
     size: Size = Size.DEFAULT,
     actions: Action[]
   ) {

@@ -79,7 +79,7 @@ SizeEnum returns string:
 ;
 
 Diapo:
-  'diapo' '{'
+  'diapo' title=StringValue? '{'
     template=TemplateDefinitionOrInclude?
     annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*

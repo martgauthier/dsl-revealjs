@@ -8,7 +8,8 @@ export class Diapo implements Visitable{
     constructor(
         public slides: AbstractSlide[],
         public template?: Template,
-        public annotationsEnabled: boolean = false
+        public annotationsEnabled: boolean = false,
+        public title : String = "Reveal Presentation"
     ) {}
 
     accept(visitor: Visitor): void {

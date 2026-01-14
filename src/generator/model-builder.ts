@@ -108,6 +108,7 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   });
   
   let template: Template | undefined = undefined;
+  console.log("DIAPO TITLE : ", diapoAst.title);
   
   if(diapoAst.template && diapoAst.template.definition){
     template = buildTemplateFromDefinition(diapoAst.template.definition);
@@ -115,7 +116,7 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   else if (diapoAst.template && diapoAst.template.include){
     template = buildTemplateFromInclude(diapoAst.template.include);
   }
-  return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false);
+  return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false, diapoAst.title);
 }
 
 function buildSlide(slideAst: any): Slide {

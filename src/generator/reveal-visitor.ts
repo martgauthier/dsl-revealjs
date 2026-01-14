@@ -23,6 +23,7 @@ import {Size} from "../model/enums/size.enum.js";
 export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
 
+  diapoTitle : String = "";
   private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
   private currentSlideContent: string[] = [];
@@ -43,7 +44,7 @@ export class RevealVisitor implements Visitor {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Reveal DSL</title>
+  <title>${this.diapoTitle}</title>
   <link rel="stylesheet" href="./public/reveal/dist/reveal.css">
   <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
   <script src="./public/reveal/dist/reveal.js"></script>
@@ -302,6 +303,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     if(diapo.template){
       diapo.template.accept(this);
     }
+    this.diapoTitle = diapo.title;
     this.annotationsEnabled = diapo.annotationsEnabled ?? false;
     for (const slide of diapo.slides) {
       this.isNestedSlide = false;

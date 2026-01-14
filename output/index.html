@@ -73,49 +73,76 @@
         .reveal .code-wrapper code {
             white-space: pre;
         }
+
+    .template-header, .template-footer {
+      position: absolute;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-height: 15%;
+    }
+
+    .template-header {
+      top: 0;
+    }
+    .template-footer {
+      bottom: 0;
+    }
+    p { color: green; }
+p { font-size: 2em; }
+
   </style>
 
 </head>
 <body>
 
 <div class="reveal">
+  <div class="template-header">
+<img id="image-0"
+     src="https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/zwpori82kr8sm8e1fvsp?ik-sanitizeSvg=true"
+     alt="">
+</div>
   <div class="slides">
-    <section>
+    <section  data-transition="zoom-in zoom-out" class="slide">
+                <p id="text-0">hddshdfe</p>
+              </section>
+<section  data-transition="fade-in fade-out" class="slide">
                 <h1>Display Animations</h1>
 
       <div class="fragment fade-in"
            data-fragment-index="0">
-        <p id="text-0">Hello</p>
+        <p id="text-1">Hello</p>
       </div>
     
               </section>
-<section>
+<section  class="slide">
                 <h1>Hide Animations</h1>
 
     <div>
       <span class="fragment fade-out"
             data-fragment-index="0">
-        <p id="text-1">Goodbye</p>
+        <p id="text-2">Goodbye</p>
       </span>
     </div>
   
               </section>
-<section>
+<section  class="slide">
                 <h1>Replace Animations</h1>
-<p id="text-2">1...</p>
+<p id="text-3">1...</p>
 <span class="fragment"
       data-fragment-index="0"
-      data-replace-text="#text-2|...2">
+      data-replace-text="#text-3|...2">
 </span>
 
               </section>
-<section>
+<section  class="slide">
                 <h1>Highlight Code Animations</h1>
 
 <pre>
-  <code class="language-javascript"
-        data-trim
-        data-line-numbers="|1|2|3|4" data-fragment-index="0|1|2|3">
+<code class="language-javascript"
+    data-trim
+    data-line-numbers="|1|2|3|4" data-fragment-index="0|1|2|3">
 const components = ast.components.map((c: any) => {
     const builder = COMPONENT_BUILDERS[c.$type];
     if (!builder) {
@@ -123,11 +150,16 @@ const components = ast.components.map((c: any) => {
     }
     return builder(c);
 });
-  </code>
+</code>
 </pre>
 
               </section>
   </div>
+  <div class="template-footer">
+<img id="image-1"
+     src="https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/18c05fe098149fb63b274945ce1a672e"
+     alt="">
+</div>
 </div>
 
 <!-- Reveal JS -->

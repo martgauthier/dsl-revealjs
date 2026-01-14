@@ -2,10 +2,12 @@ diapo {
   use template "./template_export.sml"
 
   slide {
+    transition in zoom out zoom
     text "hddshdfe"
   }
 
   slide {
+    transition in fade out fade
     title "Display Animations"
     text "Hello"{
         display in step 1
@@ -38,4 +40,5 @@ diapo {
     highlight lines 3 in step 3
     highlight lines 4 in step 4
   }
+}
 }

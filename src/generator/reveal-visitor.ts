@@ -19,6 +19,7 @@ import type {LatexComponent} from "../model/components/latex-component.js";
 import type { Template } from "../model/template.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
+import { Transition } from "../model/enums/transition.enum.js";
 
 export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
@@ -315,16 +316,34 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const component of slide.components) {
       component.accept(this);
     }
+    const transitionAttr = (() => {
+      if (
+        slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT
+      ) return "";
+
+      const inPart =
+        slide.transitionIn !== Transition.DEFAULT
+          ? `${slide.transitionIn}-in`
+          : "default-in";
+
+      const outPart =
+        slide.transitionOut !== Transition.DEFAULT
+          ? `${slide.transitionOut}-out`
+          : "default-out";
+
+      return ` data-transition="${inPart} ${outPart}"`;
+    })();
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+            `<section ${transitionAttr} ${this.hasTemplate ? 'class="slide"' : ''}>
                 ${this.currentSlideContent.join("\n")}
               </section>`
           );
     }
-
   }
+
 
   visitNestedSlide(nestedSlide: NestedSlide) {
     this.isNestedSlide = true;

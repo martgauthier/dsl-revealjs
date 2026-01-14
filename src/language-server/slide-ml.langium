@@ -167,6 +167,7 @@ LineRange:
 
 LatexComponent:
   'latex' formula=StringValue
+  color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 

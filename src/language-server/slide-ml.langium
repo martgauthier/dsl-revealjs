@@ -1,7 +1,7 @@
 grammar SlideML
 
 // ===== TERMINALS =====
-terminal ML_STRING: 
+terminal ML_STRING:
   '"""' -> '"""'
 ;
 
@@ -9,34 +9,34 @@ terminal STRING:
   '"' ('\\' . | !('\\' | '"'))* '"'
 ;
 
-
 terminal DIRECTION: 
   'vertical' | 'horizontal'
 ;
 
-terminal ID:
-  /[a-zA-Z_][a-zA-Z0-9_]*/
-;
-
+terminal AnnotationsEnabled:
+  'enable annotations';
 
 // ===== UTILITIES =====
 StringValue returns string:
   STRING | ML_STRING
 ;
 
-StringBinding:
-  key=STRING '=>' value=STRING;
+UnquotedStringBinding:
+  key=UNQUOTED_NO_SPACES ARROW value=UNQUOTED_NO_SPACES;
 
 // ===== ENTRY =====
 entry Model:
-  (template=Template)?
-  diapo=Diapo
+  diapo=Diapo | templateExport=TemplateExport
 ;
 
 
 // ===== TEMPLATE ======
-Template:
+TemplateDefinitionOrInclude:
   'use' 'template' (definition=TemplateDefinition | include=TemplateInclude);
+
+TemplateExport:
+  'export' 'template' definition=TemplateDefinition
+;
 
 TemplateInclude:
   value=STRING;
@@ -59,27 +59,29 @@ Temp_Header: 'header' '{' value=Component '}';
 
 Temp_Footer: 'footer' '{' value=Component '}';
 
-Temp_Fonts: 'fonts' '{' fontMappings+=StringBinding* '}';
+Temp_Fonts: 'fonts' '{' fontMappings+=UnquotedStringBinding+ '}';
 
-Temp_Colors: 'colors' '{' colorMappings+=StringBinding* '}';
+Temp_Colors: 'colors' '{' colorMappings+=UnquotedStringBinding+ '}';
 
-Temp_Background: 'background' '=>' backgroundValue=STRING;
+Temp_Background: 'background' ARROW backgroundValue=STRING;
 
-Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=StringBinding* '}';
+Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
 
-Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping* '}';
+Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 
 SizeMapping:
-  key=STRING '=>' value=SizeEnum;
+  key=UNQUOTED_NO_SPACES ARROW value=SizeEnum;
 
 // ===== STRUCTURE =====
 
 SizeEnum returns string:
   'XL' | 'L' | 'M' | 'S' | 'XS'
 ;
+
 Diapo:
   'diapo' '{'
-    annotationsEnabled=('enable annotations')?
+    template=TemplateDefinitionOrInclude?
+    annotationsEnabled=AnnotationsEnabled?
     slides+=AbstractSlide*
   '}'
 ;
@@ -115,37 +117,82 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue
+  'text' value=StringValue color=TextColorPrecision? actionBlock=ActionBlock?
+;
+
+TextColorPrecision:
+  '[' color=UNQUOTED_NO_SPACES ']'
 ;
 
 VideoComponent:
-  'video' src=STRING autoPlay?=('autoPlay')?
+  'video' 'src' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
-  'image' src=STRING ('alt' alt=STRING)?
+  'image' src=STRING ('alt' alt=STRING)? actionBlock=ActionBlock?
 ;
 
 CodeComponent:
-  'code'
-  'language' language=ID
-  value=STRING
+    'code'
+    'language' language=UNQUOTED_NO_SPACES
+    value=STRING
+    actionBlock=ActionBlock?
 ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
     components+=Component*
+    actionBlock=ActionBlock?
   '}'
+;
+
+ActionBlock:
+  '{' actions+=Action* '}'
+;
+
+Action:
+  DisplayAction | HideAction | HighlightAction | ReplaceAction
+;
+
+DisplayAction:
+  'display' ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+HideAction:
+  'hide' ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+HighlightAction:
+  'highlight' 'lines' range=LineRange ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+ReplaceAction:
+  'replace' 'by' update=STRING ('in' 'step' step=UNQUOTED_NO_SPACES)?
+;
+
+LineRange:
+  start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
 
 LatexComponent:
   'latex' formula=StringValue
+  color=TextColorPrecision?
+  actionBlock=ActionBlock?
 ;
 
 TitleComponent:
-  'title' text=STRING
+  'title' text=STRING color=TextColorPrecision?
+  actionBlock=ActionBlock?
+;
+
+terminal ARROW:
+  '=>';
+
+terminal UNQUOTED_NO_SPACES:
+    /[^\s\[\]]+/
 ;
 
 hidden terminal WS: /\s+/;
+hidden terminal NEWLINE: /\r?\n/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

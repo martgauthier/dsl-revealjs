@@ -1,8 +1,8 @@
 export enum Transition {
-    NONE,
-    DEFAULT,
-    ZOOM,
-    FADE,
-    CONCAVE,
-    CONVEX,
+    NONE = "none",
+    DEFAULT = "default",
+    ZOOM = "zoom",
+    FADE = "fade",
+    CONCAVE = "concave",
+    CONVEX = "convex",
 }

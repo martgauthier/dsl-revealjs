@@ -90,6 +90,7 @@ Diapo:
   '}'
 ;
 
+
 AbstractSlide:
   Slide | NestedSlide
 ;
@@ -99,24 +100,36 @@ NestedSlide:
     subSlides+=Slide*
   '}'
 ;
-
+TransitionType returns string:
+  'none' | 'default' | 'zoom' | 'fade' | 'concave' | 'convex'
+;
 Slide:
   'slide' '{'
+    ('transition'
+      ( 'in' transitionIn=TransitionType
+      | 'out' transitionOut=TransitionType
+      | transition=TransitionType
+      )*
+    )?
     components+=Component*
   '}'
 ;
 
 Component:
-  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
+  (TextComponent | PlotComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent ) size=SizeEnum?
 ;
 
 TextComponent:
-  'text' value=StringValue actionBlock=ActionBlock?
+  'text' value=StringValue color=TextColorPrecision? actionBlock=ActionBlock?
+;
+
+TextColorPrecision:
+  '[' color=UNQUOTED_NO_SPACES ']'
 ;
 
 VideoComponent:
-  'video' 'src' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
+  'video' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:
@@ -129,6 +142,41 @@ CodeComponent:
     value=STRING
     actionBlock=ActionBlock?
 ;
+
+PlotComponent:
+    'plot' '{'
+      properties+=PlotProperty*
+    '}'
+    actionBlock=ActionBlock?
+  ;
+
+PlotProperty
+  : PlotFunction
+  | PlotDomain
+  | PlotSamples
+  | PlotXUnit
+  | PlotYUnit
+  ;
+
+PlotFunction
+  : 'function' value=STRING color=TextColorPrecision?
+  ;
+
+PlotDomain
+  : 'domain' '[' min=UNQUOTED_NO_SPACES ',' max=UNQUOTED_NO_SPACES ']'
+  ;
+
+PlotSamples
+  : 'samples' value=UNQUOTED_NO_SPACES
+  ;
+
+PlotXUnit
+  : 'xUnit' value=STRING
+  ;
+
+PlotYUnit
+  : 'yUnit' value=STRING
+  ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
@@ -165,20 +213,24 @@ LineRange:
   start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
 
+
 LatexComponent:
   'latex' formula=StringValue
+  color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 TitleComponent:
-  'title' text=STRING
+  'title' text=STRING color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 terminal ARROW:
   '=>';
+
 terminal UNQUOTED_NO_SPACES:
-  /[^\s\r\n]+/;
+    /[^\s\[\]]+/
+;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;

@@ -19,6 +19,9 @@ import type {LatexComponent} from "../model/components/latex-component.js";
 import type { Template } from "../model/template.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
+import type {PlotComponent} from "../model/components/plot-component.js";
+import { Transition } from "../model/enums/transition.enum.js";
+
 
 export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
@@ -50,23 +53,26 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
-  <script src="./public/mathjax/tex-chtml.js"></script>
+  <script src="./public/mathjax/tex-mml-chtml.js" defer></script>
+  <script src="./public/mathjs/math.js"></script>
   
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-  ${this.annotationsEnabled ?
-        `<!-- Font awesome is required for the chalkboard plugin -->
-        <script src="./public/fontawesome/js/all.min.js"></script>
-        <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
-        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
-        <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
-        <!-- Chalkboard plugin -->
-        <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
+  ${this.annotationsEnabled ? 
+    `<!-- Font awesome is required for the chalkboard plugin -->
+    <script src="./public/fontawesome/js/all.min.js"></script>
+    <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
+    <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+    <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+    <!-- Chalkboard plugin -->
+    <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
 
   
   <style>
+  .reveal {
+    font-family: 'Inter', sans-serif;
+  }
+  
   :root {
         --r-block-margin: 20px;
         --r-code-font: monospace;
@@ -141,6 +147,34 @@ export class RevealVisitor implements Visitor {
       bottom: 0;
     }
     ${this.templateStyle}
+    
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Italic.woff2') format('woff2');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-BoldItalic.woff2') format('woff2');
+        font-weight: 700;
+        font-style: italic;
+    }
   </style>
 
 </head>
@@ -319,16 +353,35 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const component of slide.components) {
       component.accept(this);
     }
+    const transitionAttr = (() => {
+      if (
+        slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT
+      ) return "";
+
+      const inPart =
+        slide.transitionIn !== Transition.DEFAULT
+          ? `${slide.transitionIn}-in`
+          : "default-in";
+
+      const outPart =
+        slide.transitionOut !== Transition.DEFAULT
+          ? `${slide.transitionOut}-out`
+          : "default-out";
+
+      return ` data-transition="${inPart} ${outPart}"`;
+    })();
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+            `<section ${transitionAttr} ${this.hasTemplate ? 'class="slide"' : ''}>
                 ${this.currentSlideContent.join("\n")}
               </section>`
           );
     }
 
   }
+
 
   visitNestedSlide(nestedSlide: NestedSlide) {
     this.isNestedSlide = true;
@@ -349,15 +402,20 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
-
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
-    const html = marked.parseInline(normalized) as string;
-    console.log("norm", normalized);
-    console.log("html", html);
+    const html = marked.parse(normalized) as string;
+    const htmlWithoutP = html
+        .replace(/^<p>/, '')
+        .replace(/<\/p>$/, '');
 
-    const baseHtml =
-        `<p id="${id}">${html}</p>`;
+
+    let baseHtml;
+    if(textComponent.color) {
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${htmlWithoutP}</p>`;
+    } else {
+      baseHtml = `<p id="${id}">${htmlWithoutP}</p>`;
+    }
 
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -593,7 +651,6 @@ ${codeComponent.content}
     }
 
       if (!display && hide) {
-          console.log("hide.step : ", hide.step);
           return `
     <div>
       <span class="fragment fade-out"
@@ -629,16 +686,30 @@ ${codeComponent.content}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
   visitReplaceAction(replaceAction: ReplaceAction) {}
-    visitLatexComponent(latexComponent: LatexComponent): void {
-        const formula = this.normalizeMultiline(latexComponent.formula);
+
+  visitLatexComponent(latexComponent: LatexComponent): void {
+      const formula = this.normalizeMultiline(latexComponent.formula);
+
+      if(latexComponent.color) {
         this.currentSlideContent.push(`
-    <div>
-      \\[
-        ${formula}
-      \\]
-    </div>
-    `);
-    }
+  <div style="color: ${latexComponent.color};">
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+      else {
+      this.currentSlideContent.push(`
+  <div>
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+  }
+
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {
@@ -657,6 +728,137 @@ ${codeComponent.content}
       case Size.XS:
         titleNumber = "5";
     }
-    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    if(titleComponent.color) {
+      this.currentSlideContent.push(`<h${titleNumber} style="color: ${titleComponent.color};">${titleComponent.text}</h${titleNumber}>`);
+    }
+    else {
+      this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    }
   }
+
+    visitPlotComponent(plot: PlotComponent): void {
+        const id = `plot-${Math.random().toString(36).slice(2)}`;
+        const functions = plot.functions;
+        const functionsJs = plot.functions
+            .map(f => `math.compile("${f.expr}")`)
+            .join(",");
+        const colors = functions
+            .map(f =>{
+                return `"${f.color ?? "black"}"`;
+            } )
+            .join(",");
+        const canvasHtml = `
+    <canvas id="${id}" width="720" height="480"></canvas>
+
+    <script>
+      (function() {
+        const exprs = [${functionsJs}];
+        const colors = [${colors}]
+
+        const xmin = ${plot.domain[0]};
+        const xmax = ${plot.domain[1]};
+        const samples = ${plot.samples};
+
+        const xs = [];
+        const ys = exprs.map(() => []);
+
+        for (let i = 0; i <= samples; i++) {
+          const x = xmin + (i / samples) * (xmax - xmin);
+          xs.push(x);
+          exprs.forEach((e, idx) => {
+            ys[idx].push(e.evaluate({ x }));
+          });
+        }
+
+        const canvas = document.getElementById("${id}");
+        const ctx = canvas.getContext("2d");
+
+        const padding = 70;
+        const w = canvas.width - 2 * padding;
+        const h = canvas.height - 2 * padding;
+
+        const allY = ys.flat();
+        const ymin = Math.min(...allY);
+        const ymax = Math.max(...allY);
+
+        const mapX = x =>
+          padding + ((x - xmin) / (xmax - xmin)) * w;
+
+        const mapY = y =>
+          padding + h - ((y - ymin) / (ymax - ymin)) * h;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "14px sans-serif";
+        ctx.strokeStyle = "#888";
+        ctx.fillStyle = "#ccc";
+
+        // Axes passant par (0,0)
+        ctx.strokeStyle = "#aaa";
+        ctx.lineWidth = 1;
+        
+        // Axe Y (x = 0)
+        if (xmin <= 0 && xmax >= 0) {
+          const x0 = mapX(0);
+          ctx.beginPath();
+          ctx.moveTo(x0, padding);
+          ctx.lineTo(x0, padding + h);
+          ctx.stroke();
+        }
+        
+        // Axe X (y = 0)
+        if (ymin <= 0 && ymax >= 0) {
+          const y0 = mapY(0);
+          ctx.beginPath();
+          ctx.moveTo(padding, y0);
+          ctx.lineTo(padding + w, y0);
+          ctx.stroke();
+        }
+
+        // Graduations
+        const ticks = 5;
+
+        for (let i = 0; i <= ticks; i++) {
+          const x = xmin + (i / ticks) * (xmax - xmin);
+          const px = mapX(x);
+          ctx.fillText(x.toFixed(1), px - 12, padding + h + 22);
+        }
+
+        for (let i = 0; i <= ticks; i++) {
+          const y = ymin + (i / ticks) * (ymax - ymin);
+          const py = mapY(y);
+          ctx.fillText(y.toFixed(1), padding - 48, py + 4);
+        }
+
+        // Unités
+        ctx.fillText("x (${plot.xUnit})", padding + w / 2 - 15, canvas.height - 20);
+        ctx.save();
+        ctx.translate(20, padding + h / 2 + 20);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("f(x) (${plot.yUnit})", 0, 0);
+        ctx.restore();
+
+        // Courbes
+        
+
+        ys.forEach((curve, idx) => {
+          ctx.strokeStyle = colors[idx] ?? "black";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+
+          curve.forEach((y, i) => {
+            const cx = mapX(xs[i]);
+            const cy = mapY(y);
+            i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+          });
+
+          ctx.stroke();
+        });
+      })();
+    </script>
+  `;
+
+        this.currentSlideContent.push(
+            this.renderFragments(canvasHtml, plot.actions)
+        );
+    }
 }

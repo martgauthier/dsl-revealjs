@@ -10,8 +10,9 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
-import { Template } from "../model/template.js";
 import {TitleComponent} from "../model/components/title-component.js";
+import { Transition } from "../model/enums/transition.enum.js";
+import { Template } from "../model/template.js";
 import { parseTemplateFromFile } from "../template_export_parser.js";
 import path from "path";
 import {DisplayAction} from "../model/actions/display-action.js";
@@ -19,6 +20,8 @@ import type {Action} from "../model/actions/action.abstract.js";
 import {HideAction} from "../model/actions/hide-action.js";
 import {HighlightAction} from "../model/actions/highlight-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
+import {PlotComponent} from "../model/components/plot-component.js";
+import type {PlotFunctionDef} from "../model/components/plot-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -26,9 +29,10 @@ let PROCESSED_FILE_PATH: string = "";
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value, sizeConverter(ast.size), buildActions(ast.actionBlock));
+    return new TextComponent(ast.value, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  TitleComponent: (ast) => new TitleComponent(ast.text, sizeConverter(ast.size), buildActions(ast.actionBlock)),
+  PlotComponent: (ast) => { return buildPlotComponent(ast)},
+  TitleComponent: (ast) => new TitleComponent(ast.text, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
   ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
   CodeComponent: (ast) => new CodeComponent(dedent(ast.value), ast.language, sizeConverter(ast.size), buildActions(ast.actionBlock)),
@@ -43,7 +47,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
     const direction = ast.direction === "horizontal" ? Direction.HORIZONTAL : Direction.VERTICAL;
     return new FrameComponent(components, direction, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
-  LatexComponent: (ast) => new LatexComponent(ast.formula, Size.DEFAULT, buildActions(ast.actionBlock))
+  LatexComponent: (ast) => new LatexComponent(ast.formula, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock))
 }
 
 const TEMPLATE_BUILDERS : Record<string, any> = {
@@ -70,7 +74,6 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
       colors[pair.key] = pair.value;
     });
     template.colors = colors;
-    console.log("Template colors:", template.colors);
   },
   "Temp_Fonts": (section: any, template: Template) => {
     let fonts: Record<any, any> = {};
@@ -118,6 +121,11 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false, diapoAst.title, diapoAst.pageNumbering);
 }
 
+function transitionConverter(value?: string): Transition {
+  if (!value) return Transition.DEFAULT;
+  return Transition[value.toUpperCase() as keyof typeof Transition];
+}
+
 function buildSlide(slideAst: any): Slide {
   const components = slideAst.components.map((c: any) => {
     const builder = COMPONENT_BUILDERS[c.$type];
@@ -127,22 +135,33 @@ function buildSlide(slideAst: any): Slide {
     return builder(c);
   });
 
+  const transitionIn = slideAst.transitionIn
+    ? transitionConverter(slideAst.transitionIn)
+    : slideAst.transition
+      ? transitionConverter(slideAst.transition)
+      : Transition.DEFAULT;
+
+  const transitionOut = slideAst.transitionOut
+    ? transitionConverter(slideAst.transitionOut)
+    : Transition.DEFAULT;
+
   return new Slide(
-      undefined as any, // transitionIn
-      undefined as any, // transitionOut
-      [],               // steps (actions)
-      components        // components
+    transitionIn,
+    transitionOut,
+    [],
+    components
   );
 }
+
 
 function buildNestedSlide(nestedSlideAst: any): NestedSlide {
   const subSlides = nestedSlideAst.subSlides.map((slideAst: any) => buildSlide(slideAst));
 
   return new NestedSlide(
-      undefined as any, // transitionIn
-      undefined as any, // transitionOut
-      [],               // steps (actions)
-      subSlides         // subSlides
+    Transition.DEFAULT, // transitionIn
+    Transition.DEFAULT, // transitionOut
+    [],               // steps (actions)
+    subSlides         // subSlides
   )
 }
 
@@ -154,9 +173,7 @@ function buildActions(actionBlockAst: any): Action[] {
       case "DisplayAction":
         return new DisplayAction(a.step ?? 1);
       case "HideAction":
-        console.log("a.step : ", a.step);
         let h = new HideAction(a.step ?? 1);
-        console.log("h",h);
         return h;
       case "HighlightAction": {
         const start = a.range.start;
@@ -176,6 +193,49 @@ function buildActions(actionBlockAst: any): Action[] {
   });
 }
 
+function buildPlotComponent(ast : any ){
+  const functions: PlotFunctionDef[] = [];
+  let domain: [number, number] | [any, any] = [-10, 10];
+  let samples = 300;
+  let xUnit = "";
+  let yUnit = "";
+
+  for (const prop of ast.properties ?? []) {
+    switch (prop.$type) {
+      case "PlotFunction":
+        functions.push({
+          expr: prop.value,
+          color: prop.color.color
+        });
+        break;
+
+      case "PlotDomain":
+        domain = [prop.min, prop.max];
+        break;
+
+      case "PlotSamples":
+        samples = prop.value;
+        break;
+
+      case "PlotXUnit":
+        xUnit = prop.value;
+        break;
+
+      case "PlotYUnit":
+        yUnit = prop.value;
+        break;
+    }
+  }
+  return new PlotComponent(
+      functions,
+      domain,
+      samples,
+      xUnit,
+      yUnit,
+      sizeConverter(ast.size),
+      buildActions(ast.actionBlock)
+  );
+}
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");
@@ -184,9 +244,9 @@ function dedent(text: string): string {
   while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();
 
   const indent = Math.min(
-      ...lines
-          .filter(l => l.trim())
-          .map(l => l.match(/^ */)![0].length)
+    ...lines
+      .filter(l => l.trim())
+      .map(l => l.match(/^ */)![0].length)
   );
 
   return lines.map(l => l.slice(indent)).join("\n");
@@ -208,12 +268,7 @@ function buildTemplateFromInclude(templateIncludeAst: any): Template {
     //The file path will be considered as relative to the currently processed file directory, we need to resolve it
     let currentFileDir = path.dirname(PROCESSED_FILE_PATH);
     filePath = path.resolve(currentFileDir, filePath);
-
-    console.log("Including template from file:", filePath);
     let template = parseTemplateFromFile(filePath);
-
-    console.log("parsed template: ", template);
-
     return template;
 }
 

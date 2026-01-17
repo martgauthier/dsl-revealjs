@@ -51,7 +51,7 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
-  <script src="./public/mathjax/tex-chtml.js"></script>
+  <script src="./public/mathjax/tex-mml-chtml.js" defer></script>
   <script src="./public/mathjs/math.js"></script>
   
   ${this.annotationsEnabled ? 

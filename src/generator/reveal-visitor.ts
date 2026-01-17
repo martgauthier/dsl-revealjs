@@ -52,7 +52,7 @@ export class RevealVisitor implements Visitor {
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
   <script src="./public/mathjax/tex-chtml.js"></script>
-  <script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+  <script src="./public/mathjs/math.js"></script>
   
   ${this.annotationsEnabled ? 
     `<!-- Font awesome is required for the chalkboard plugin -->

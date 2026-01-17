@@ -1,4 +1,4 @@
-diapo {
+diapo "DSL Demo" {
   use template "./template_export.sml"
   enable annotations
   slide {

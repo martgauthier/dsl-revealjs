@@ -105,12 +105,62 @@ p { font-size: 2em; }
      alt="">
 </div>
   <div class="slides">
-    <section class="slide">
+    <section  data-transition="zoom-in zoom-out" class="slide">
+                <p id="text-0">hddshdfe</p>
+              </section>
+<section  data-transition="fade-in fade-out" class="slide">
+                <h1>Display Animations</h1>
+
+      <div class="fragment fade-in"
+           data-fragment-index="0">
+        <p id="text-1">Hello</p>
+      </div>
+    
+              </section>
+<section  class="slide">
+                <h1>Hide Animations</h1>
+
+    <div>
+      <span class="fragment fade-out"
+            data-fragment-index="0">
+        <p id="text-2">Goodbye</p>
+      </span>
+    </div>
+  
+              </section>
+<section  class="slide">
+                <h1>Replace Animations</h1>
+<p id="text-3">1...</p>
+<span class="fragment"
+      data-fragment-index="0"
+      data-replace-text="#text-3|...2">
+</span>
+
+              </section>
+<section  class="slide">
+                <h1>Highlight Code Animations</h1>
+
+<pre>
+<code class="language-javascript"
+    data-trim
+    data-line-numbers="|1|2|3|4" data-fragment-index="0|1|2|3">
+const components = ast.components.map((c: any) => {
+    const builder = COMPONENT_BUILDERS[c.$type];
+    if (!builder) {
+        throw new Error(`Unknown component type: ${c.$type}`);
+    }
+    return builder(c);
+});
+</code>
+</pre>
+
+              </section>
+<section  class="slide">
                 <h1>Complete plot</h1>
 
     <div class="horizontal-frame">
       
-    <canvas id="plot-zqr98om5p3" width="720" height="480"></canvas>
+    <canvas id="plot-jmar21nkv5" width="720" height="480"></canvas>
 
     <script>
       (function() {
@@ -132,7 +182,7 @@ p { font-size: 2em; }
           });
         }
 
-        const canvas = document.getElementById("plot-zqr98om5p3");
+        const canvas = document.getElementById("plot-jmar21nkv5");
         const ctx = canvas.getContext("2d");
 
         const padding = 70;

@@ -10,8 +10,9 @@ import {CodeComponent} from "../model/components/code-component.js";
 import {NestedSlide} from "../model/nestedSlide.js";
 import {FrameComponent} from "../model/components/frame-component.js";
 import {Direction} from "../model/enums/direction.enum.js";
-import { Template } from "../model/template.js";
 import {TitleComponent} from "../model/components/title-component.js";
+import { Transition } from "../model/enums/transition.enum.js";
+import { Template } from "../model/template.js";
 import { parseTemplateFromFile } from "../template_export_parser.js";
 import path from "path";
 import {DisplayAction} from "../model/actions/display-action.js";
@@ -28,7 +29,7 @@ let PROCESSED_FILE_PATH: string = "";
 
 const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
-    return new TextComponent(ast.value,ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock));
+    return new TextComponent(ast.value, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
   PlotComponent: (ast) => { return buildPlotComponent(ast)},
   TitleComponent: (ast) => new TitleComponent(ast.text, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock)),
@@ -73,7 +74,6 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
       colors[pair.key] = pair.value;
     });
     template.colors = colors;
-    console.log("Template colors:", template.colors);
   },
   "Temp_Fonts": (section: any, template: Template) => {
     let fonts: Record<any, any> = {};
@@ -98,7 +98,6 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
   }
 }
 
-
 /**
  * Transforme l’AST Langium → modèle métier
  */
@@ -110,9 +109,9 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
     }
     return buildNestedSlide(abstractSlideAst)
   });
-
+  
   let template: Template | undefined = undefined;
-
+  
   if(diapoAst.template && diapoAst.template.definition){
     template = buildTemplateFromDefinition(diapoAst.template.definition);
   }
@@ -120,6 +119,11 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
     template = buildTemplateFromInclude(diapoAst.template.include);
   }
   return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false);
+}
+
+function transitionConverter(value?: string): Transition {
+  if (!value) return Transition.DEFAULT;
+  return Transition[value.toUpperCase() as keyof typeof Transition];
 }
 
 function buildSlide(slideAst: any): Slide {
@@ -131,22 +135,33 @@ function buildSlide(slideAst: any): Slide {
     return builder(c);
   });
 
+  const transitionIn = slideAst.transitionIn
+    ? transitionConverter(slideAst.transitionIn)
+    : slideAst.transition
+      ? transitionConverter(slideAst.transition)
+      : Transition.DEFAULT;
+
+  const transitionOut = slideAst.transitionOut
+    ? transitionConverter(slideAst.transitionOut)
+    : Transition.DEFAULT;
+
   return new Slide(
-      undefined as any, // transitionIn
-      undefined as any, // transitionOut
-      [],               // steps (actions)
-      components        // components
+    transitionIn,
+    transitionOut,
+    [],
+    components
   );
 }
+
 
 function buildNestedSlide(nestedSlideAst: any): NestedSlide {
   const subSlides = nestedSlideAst.subSlides.map((slideAst: any) => buildSlide(slideAst));
 
   return new NestedSlide(
-      undefined as any, // transitionIn
-      undefined as any, // transitionOut
-      [],               // steps (actions)
-      subSlides         // subSlides
+    Transition.DEFAULT, // transitionIn
+    Transition.DEFAULT, // transitionOut
+    [],               // steps (actions)
+    subSlides         // subSlides
   )
 }
 
@@ -158,9 +173,7 @@ function buildActions(actionBlockAst: any): Action[] {
       case "DisplayAction":
         return new DisplayAction(a.step ?? 1);
       case "HideAction":
-        console.log("a.step : ", a.step);
         let h = new HideAction(a.step ?? 1);
-        console.log("h",h);
         return h;
       case "HighlightAction": {
         const start = a.range.start;
@@ -231,9 +244,9 @@ function dedent(text: string): string {
   while (lines.length && lines[lines.length - 1]!.trim() === "") lines.pop();
 
   const indent = Math.min(
-      ...lines
-          .filter(l => l.trim())
-          .map(l => l.match(/^ */)![0].length)
+    ...lines
+      .filter(l => l.trim())
+      .map(l => l.match(/^ */)![0].length)
   );
 
   return lines.map(l => l.slice(indent)).join("\n");
@@ -245,7 +258,7 @@ export function buildTemplateFromDefinition(templateAst: any): Template | undefi
   for (const section of templateAst.sections) {
     TEMPLATE_BUILDERS[section.$type](section, template);
   }
-
+  
   if(templateAst.sections) return template;
 }
 
@@ -255,12 +268,7 @@ function buildTemplateFromInclude(templateIncludeAst: any): Template {
     //The file path will be considered as relative to the currently processed file directory, we need to resolve it
     let currentFileDir = path.dirname(PROCESSED_FILE_PATH);
     filePath = path.resolve(currentFileDir, filePath);
-
-    console.log("Including template from file:", filePath);
     let template = parseTemplateFromFile(filePath);
-
-    console.log("parsed template: ", template);
-
     return template;
 }
 

@@ -20,6 +20,8 @@ import type { Template } from "../model/template.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
 import type {PlotComponent} from "../model/components/plot-component.js";
+import { Transition } from "../model/enums/transition.enum.js";
+
 
 export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
@@ -317,16 +319,35 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const component of slide.components) {
       component.accept(this);
     }
+    const transitionAttr = (() => {
+      if (
+        slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT
+      ) return "";
+
+      const inPart =
+        slide.transitionIn !== Transition.DEFAULT
+          ? `${slide.transitionIn}-in`
+          : "default-in";
+
+      const outPart =
+        slide.transitionOut !== Transition.DEFAULT
+          ? `${slide.transitionOut}-out`
+          : "default-out";
+
+      return ` data-transition="${inPart} ${outPart}"`;
+    })();
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+            `<section ${transitionAttr} ${this.hasTemplate ? 'class="slide"' : ''}>
                 ${this.currentSlideContent.join("\n")}
               </section>`
           );
     }
 
   }
+
 
   visitNestedSlide(nestedSlide: NestedSlide) {
     this.isNestedSlide = true;
@@ -350,8 +371,6 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parseInline(normalized) as string;
-    console.log("norm", normalized);
-    console.log("html", html);
 
     let baseHtml;
     if(textComponent.color) {
@@ -594,7 +613,6 @@ ${codeComponent.content}
     }
 
       if (!display && hide) {
-          console.log("hide.step : ", hide.step);
           return `
     <div>
       <span class="fragment fade-out"
@@ -686,10 +704,8 @@ ${codeComponent.content}
         const functionsJs = plot.functions
             .map(f => `math.compile("${f.expr}")`)
             .join(",");
-        console.log("functions0 : ",functions);
         const colors = functions
             .map(f =>{
-                console.log("f.color : ", f.color);
                 return `"${f.color ?? "black"}"`;
             } )
             .join(",");

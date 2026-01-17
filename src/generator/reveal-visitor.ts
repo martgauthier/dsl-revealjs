@@ -347,37 +347,29 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
   }
 
+  getTransitionAttrbute(slide: Slide): string {
+    if (slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT){
+      return "";
+    } 
+    const inPart = slide.transitionIn !== Transition.DEFAULT ? `${slide.transitionIn}-in` : "default-in";
+    const outPart = slide.transitionOut !== Transition.DEFAULT ? `${slide.transitionOut}-out` : "default-out";
+    return ` data-transition="${inPart} ${outPart}"`;
+  }
+
   visitSlide(slide: Slide): void {
     this.currentSlideContent = [];
 
     for (const component of slide.components) {
       component.accept(this);
     }
-    const transitionAttr = (() => {
-      if (
-        slide.transitionIn === Transition.DEFAULT &&
-        slide.transitionOut === Transition.DEFAULT
-      ) return "";
-
-      const inPart =
-        slide.transitionIn !== Transition.DEFAULT
-          ? `${slide.transitionIn}-in`
-          : "default-in";
-
-      const outPart =
-        slide.transitionOut !== Transition.DEFAULT
-          ? `${slide.transitionOut}-out`
-          : "default-out";
-
-      return ` data-transition="${inPart} ${outPart}"`;
-    })();
 
     if(!this.isNestedSlide){
-          this.slidesHtml.push(
-            `<section ${transitionAttr} ${this.hasTemplate ? 'class="slide"' : ''}>
-                ${this.currentSlideContent.join("\n")}
-              </section>`
-          );
+      this.slidesHtml.push(
+        `<section ${this.getTransitionAttrbute(slide)} ${this.hasTemplate ? 'class="slide"' : ''}>
+            ${this.currentSlideContent.join("\n")}
+         </section>`
+      );
     }
 
   }
@@ -390,7 +382,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const subslide of nestedSlide.subSlides) {
       subslide.accept(this);
       const subSlideContent =
-          `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+          `<section ${this.getTransitionAttrbute(subslide)} ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
           </section>`;
       nestedSlidesContent.push(subSlideContent);

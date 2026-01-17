@@ -87,14 +87,16 @@ export class RevealVisitor implements Visitor {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: space-evenly;
+      gap: 5px;
     }
 
     .horizontal-frame {
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 10px;
+      justify-content: space-evenly;
+      gap: 5px;
     }
     .reveal pre {
             display: block;
@@ -147,6 +149,42 @@ export class RevealVisitor implements Visitor {
       bottom: 0;
     }
     ${this.templateStyle}
+
+    .XS-video { width: 20em; height: auto; }
+    .S-video  { width: 30em; height: auto; }
+    .M-video  { width: 40em; height: auto; }
+    .L-video  { width: 55em; height: auto; }
+    .XL-video { width: 70em; height: auto; }
+
+    .XS-image { width: 5em; height: auto; }
+    .S-image  { width: 10em; height: auto; }
+    .M-image  { width: 20em; height: auto; }
+    .L-image  { width: 30em; height: auto; }
+    .XL-image { width: 35em; height: auto; }
+
+    .XS-horizontal-frame { width: 25%; }
+    .S-horizontal-frame  { width: 33%; }
+    .M-horizontal-frame  { width: 50%; }
+    .L-horizontal-frame  { width: 75%; }
+    .XL-horizontal-frame { width: 100%; }
+
+    .XS-vertical-frame { height: 25%; }
+    .S-vertical-frame  { height: 33%; }
+    .M-vertical-frame  { height: 50%; }
+    .L-vertical-frame  { height: 75%; }
+    .XL-vertical-frame { height: 100%; }
+
+    .XS-code { max-width: 30em; font-size: 0.7em; }
+    .S-code  { max-width: 45em; font-size: 0.8em; }
+    .M-code  { max-width: 60em; font-size: 1em; }
+    .L-code  { max-width: 75em; font-size: 1.1em; }
+    .XL-code { max-width: 90em; font-size: 1.2em; }
+
+    .XS-latex { font-size: 0.6em; }
+    .S-latex  { font-size: 0.8em; }
+    .M-latex  { font-size: 1em; }
+    .L-latex  { font-size: 1.3em; }
+    .XL-latex { font-size: 1.6em; }
     
     @font-face {
         font-family: 'Inter';
@@ -401,10 +439,13 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         .replace(/^<p>/, '')
         .replace(/<\/p>$/, '');
 
-
+    let fontSizeStyle = "";
+    if (textComponent.size !== Size.DEFAULT) {
+      fontSizeStyle = `font-size: ${textComponent.size};`;
+    }
     let baseHtml;
     if(textComponent.color) {
-      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${htmlWithoutP}</p>`;
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}</p>`;
     } else {
       baseHtml = `<p id="${id}">${htmlWithoutP}</p>`;
     }
@@ -439,11 +480,15 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   visitImageComponent(imageComponent: ImageComponent): void {
 
     const id = `image-${this.imageIdCounter++}`;
-
+    let sizeClass = "";
+    if(imageComponent.size !== Size.DEFAULT) {
+      sizeClass =  `${this.sizeToLetter(imageComponent.size)}-image`;
+    }
     const baseHtml = `
 <img id="${id}"
      src="${imageComponent.src}"
-     alt="${imageComponent.alt ?? ""}">
+     alt="${imageComponent.alt ?? ""}"
+     class="${sizeClass}">
 `;
 
     const replaceActions = imageComponent.actions.filter(
@@ -476,9 +521,12 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   visitVideoComponent(videoComponent: VideoComponent): void {
 
     const id = `video-${this.videoIdCounter++}`;
-
+    let sizeClass = "";
+    if(videoComponent.size !== Size.DEFAULT) {
+      sizeClass = `${this.sizeToLetter(videoComponent.size)}-video`;
+    }
     const baseHtml = `
-<video id="${id}" controls ${videoComponent.autoPlay ? "muted autoplay" : ""}>
+<video id="${id}" controls ${videoComponent.autoPlay ? "muted autoplay" : ""} class="${sizeClass}">
   <source src="${videoComponent.src}" type="video/mp4">
 </video>
 `;
@@ -517,6 +565,11 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         frameComponent.direction === Direction.VERTICAL
             ? "vertical-frame"
             : "horizontal-frame";
+    
+    let sizeClass = "";
+    if(frameComponent.size !== Size.DEFAULT) {
+      sizeClass = `${this.sizeToLetter(frameComponent.size)}-${frameClass}`;
+    }
 
     const frameContent: string[] = [];
 
@@ -526,7 +579,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
 
     const content = `
-    <div class="${frameClass}">
+    <div class="${frameClass} ${sizeClass}">
       ${frameContent.join("\n")}
     </div>
   `;
@@ -590,6 +643,11 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         return `${h.startLine}-${h.endLine}`;
     });
 
+    let sizeClass = "";
+    if(codeComponent.size !== Size.DEFAULT) {
+      sizeClass = `${this.sizeToLetter(codeComponent.size)}-code`;
+    }
+
     const dataLineNumbersJoined =
         dataLineNumbers.length > 0
             ? `data-line-numbers="|${dataLineNumbers.join("|")}"`
@@ -602,7 +660,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         ? `data-fragment-index="${dataFragmentIndexes.join("|")}"`
         : "";
     const content = `
-<pre>
+<pre class=${sizeClass}>
 <code class="language-${codeComponent.language}"
     data-trim
     ${dataLineNumbersJoined} ${dataFragmentIndexesJoined}>
@@ -682,9 +740,14 @@ ${codeComponent.content}
   visitLatexComponent(latexComponent: LatexComponent): void {
       const formula = this.normalizeMultiline(latexComponent.formula);
 
+      let sizeClass = "";
+      if(latexComponent.size !== Size.DEFAULT) {
+        sizeClass = `${this.sizeToLetter(latexComponent.size)}-latex`;
+      }
+
       if(latexComponent.color) {
         this.currentSlideContent.push(`
-  <div style="color: ${latexComponent.color};">
+  <div style="color: ${latexComponent.color};" class="${sizeClass}">
     \\[
       ${formula}
     \\]
@@ -693,7 +756,7 @@ ${codeComponent.content}
       }
       else {
       this.currentSlideContent.push(`
-  <div>
+  <div class="${sizeClass}">
     \\[
       ${formula}
     \\]
@@ -701,7 +764,26 @@ ${codeComponent.content}
   `);
       }
   }
-
+  sizeToLetter(size: Size): string {
+    let sizeLetter = "";
+    switch (size) {
+      case Size.XL:
+         sizeLetter = "XL";
+         break;
+      case Size.L:
+        sizeLetter =  "L";
+        break;
+      case Size.M:
+        sizeLetter =  "M";
+        break;
+      case Size.S:
+        sizeLetter =  "S";
+        break;
+      default:
+        sizeLetter =  "XS";
+    }
+    return sizeLetter;
+  }
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {
@@ -739,8 +821,35 @@ ${codeComponent.content}
                 return `"${f.color ?? "black"}"`;
             } )
             .join(",");
+        let width: number;
+        let height: number;
+        switch(plot.size) {
+          case Size.XL:
+            width = 1080;
+            height = 720;
+            break;
+          case Size.L:
+            width = 900;
+            height = 600;
+            break;
+          case Size.M:
+            width = 720;
+            height = 480;
+            break;
+          case Size.S:
+            width = 540;
+            height = 360;
+            break;
+          case Size.XS:
+            width = 360;
+            height = 240;
+            break;
+          default:
+            width = 720;
+            height = 480;
+        }
         const canvasHtml = `
-    <canvas id="${id}" width="720" height="480"></canvas>
+    <canvas id="${id}" width="${width}" height="${height}"></canvas>
 
     <script>
       (function() {

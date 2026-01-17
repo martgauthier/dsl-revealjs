@@ -195,11 +195,11 @@ export class RevealVisitor implements Visitor {
     .L-vertical-frame  { height: 75%; }
     .XL-vertical-frame { height: 100%; }
 
-    .XS-code { max-width: 30em; font-size: 0.7em; }
-    .S-code  { max-width: 45em; font-size: 0.8em; }
-    .M-code  { max-width: 60em; font-size: 1em; }
-    .L-code  { max-width: 75em; font-size: 1.1em; }
-    .XL-code { max-width: 90em; font-size: 1.2em; }
+    .XS-code { max-width: 30em; font-size: 0.7em; margin-left: 30px !important; margin-right: 30px !important; }
+    .S-code  { max-width: 45em; font-size: 0.8em; margin-left: 30px !important; margin-right: 30px !important; }
+    .M-code  { max-width: 60em; font-size: 1.0em; margin-left: 30px !important; margin-right: 30px !important; }
+    .L-code  { max-width: 75em; font-size: 1.1em; margin-left: 30px !important; margin-right: 30px !important; }
+    .XL-code { max-width: 90em; font-size: 1.2em; margin-left: 30px !important; margin-right: 30px !important; }
 
     .XS-latex { font-size: 0.6em; }
     .S-latex  { font-size: 0.8em; }

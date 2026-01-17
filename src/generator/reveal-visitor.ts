@@ -51,24 +51,26 @@ export class RevealVisitor implements Visitor {
   <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
   <script src="./public/reveal/dist/reveal.js"></script>
   <script src="./public/reveal/plugin/highlight/highlight.js"></script>
-  <script src="./public/mathjax/tex-chtml.js"></script>
-  <script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+  <script src="./public/mathjax/tex-mml-chtml.js" defer></script>
+  <script src="./public/mathjs/math.js"></script>
   
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/plugin/highlight/monokai.css">
-  ${this.annotationsEnabled ?
-        `<!-- Font awesome is required for the chalkboard plugin -->
-        <script src="./public/fontawesome/js/all.min.js"></script>
-        <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
-        <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
-        <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
-        <!-- Chalkboard plugin -->
-        <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
-        <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
+  ${this.annotationsEnabled ? 
+    `<!-- Font awesome is required for the chalkboard plugin -->
+    <script src="./public/fontawesome/js/all.min.js"></script>
+    <link rel="stylesheet" href="./public/fontawesome/css/all.min.css">
+    <!-- Custom controls plugin is used to for opening and closing annotation modes. -->
+    <script src="./public/reveal/plugin/customcontrols/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/customcontrols/style.css">
+    <!-- Chalkboard plugin -->
+    <script src="./public/reveal/plugin/chalkboard/plugin.js"></script>
+    <link rel="stylesheet" href="./public/reveal/plugin/chalkboard/style.css">` : ''}
 
   
   <style>
+  .reveal {
+    font-family: 'Inter', sans-serif;
+  }
+  
   :root {
         --r-block-margin: 20px;
         --r-code-font: monospace;
@@ -143,6 +145,34 @@ export class RevealVisitor implements Visitor {
       bottom: 0;
     }
     ${this.templateStyle}
+    
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Italic.woff2') format('woff2');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-BoldItalic.woff2') format('woff2');
+        font-weight: 700;
+        font-style: italic;
+    }
   </style>
 
 </head>
@@ -370,13 +400,17 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
-    const html = marked.parseInline(normalized) as string;
+    const html = marked.parse(normalized) as string;
+    const htmlWithoutP = html
+        .replace(/^<p>/, '')
+        .replace(/<\/p>$/, '');
+
 
     let baseHtml;
     if(textComponent.color) {
-      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${html}</p>`;
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${htmlWithoutP}</p>`;
     } else {
-      baseHtml = `<p id="${id}">${html}</p>`;
+      baseHtml = `<p id="${id}">${htmlWithoutP}</p>`;
     }
 
     const replaceActions = textComponent.actions.filter(

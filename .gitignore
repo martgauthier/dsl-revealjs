@@ -141,7 +141,7 @@ output/index.html
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-index.html
+output/index.html
 src/input/
 src/language-server/generated/
 media/

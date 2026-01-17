@@ -125,7 +125,7 @@ TextColorPrecision:
 ;
 
 VideoComponent:
-  'video' 'src' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
+  'video' src=STRING autoPlay?=('autoPlay')? actionBlock=ActionBlock?
 ;
 
 ImageComponent:

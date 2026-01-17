@@ -7,8 +7,4 @@ export class ReplaceAction extends Action {
         super(step);
         this.updatedContent = updatedContent;
     }
-
-    accept(visitor: Visitor): void {
-        visitor.visitReplaceAction(this);
-    }
 }

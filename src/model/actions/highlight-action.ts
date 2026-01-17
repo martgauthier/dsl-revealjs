@@ -8,8 +8,4 @@ export class HighlightAction extends Action {
                 public endLine: number) {
         super(step);
     }
-
-    accept(visitor: Visitor): void {
-        visitor.visitCodeHighlightAction(this);
-    }
 }

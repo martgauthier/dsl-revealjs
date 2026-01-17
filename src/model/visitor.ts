@@ -34,14 +34,6 @@ export interface Visitor {
 
     visitCodeComponent(codeComponent: CodeComponent): void;
 
-    visitHideAction(hideAction: HideAction): void;
-
-    visitDisplayAction(displayAction: DisplayAction): void;
-
-    visitCodeHighlightAction(codeHighlightAction: HighlightAction): void;
-
-    visitReplaceAction(replaceAction: ReplaceAction): void;
-
     visitLatexComponent(latexComponent: LatexComponent): void;
 
     visitTitleComponent(titleComponent: TitleComponent): void;

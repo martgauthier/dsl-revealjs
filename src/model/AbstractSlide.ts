@@ -7,8 +7,7 @@ import type {Visitor} from "./visitor.js";
 export abstract class AbstractSlide implements Visitable{
     constructor(
         public transitionIn: Transition,
-        public transitionOut: Transition,
-        public steps: Action[][]) {
+        public transitionOut: Transition) {
     }
 
     abstract accept(visitor : Visitor) : void;

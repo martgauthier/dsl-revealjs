@@ -8,10 +8,12 @@ diapo "DSL Demo" {
 
   nestedSlide {
     slide {
+      transition in concave out convex
       text "Here is a nested Slide"
     }
 
     slide {
+      transition convex
       text "Here is first subSlide"
     }
 

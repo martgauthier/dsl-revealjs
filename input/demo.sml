@@ -32,7 +32,7 @@ slide {
 5. Templates
 6. Annotations
 7. Development Add-on
-""" M
+""" S
 }
 
 slide {

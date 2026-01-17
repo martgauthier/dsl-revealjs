@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <title>Reveal.js + math.js — Graph</title>
+
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js/dist/reveal.css">
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js/dist/theme/black.css">
+
+    <style>
+        canvas {
+            background: #111;
+            border: 1px solid #444;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="reveal">
+    <div class="slides">
+
+        <!-- ===== SLIDE ===== -->
+        <section>
+            <h2>Graphe de f(x) = x² + 2x + 2</h2>
+
+            <canvas id="plot" width="700" height="450"></canvas>
+
+            <script>
+                // ===============================
+                // 1. Fonction mathématique
+                // ===============================
+                const expr = math.compile("x^2 + 2*x + 2");
+
+                // ===============================
+                // 2. Domaine et échantillonnage
+                // ===============================
+                const xmin = -10;
+                const xmax = 10;
+                const samples = 500;
+
+                const xs = [];
+                const ys = [];
+
+                for (let i = 0; i <= samples; i++) {
+                    const x = xmin + (i / samples) * (xmax - xmin);
+                    xs.push(x);
+                    ys.push(expr.evaluate({ x }));
+                }
+
+                // ===============================
+                // 3. Canvas setup
+                // ===============================
+                const canvas = document.getElementById("plot");
+                const ctx = canvas.getContext("2d");
+
+                const padding = 50;
+                const width = canvas.width - 2 * padding;
+                const height = canvas.height - 2 * padding;
+
+                const ymin = Math.min(...ys);
+                const ymax = Math.max(...ys);
+
+                const mapX = x =>
+                    padding + ((x - xmin) / (xmax - xmin)) * width;
+
+                const mapY = y =>
+                    padding + height - ((y - ymin) / (ymax - ymin)) * height;
+
+                // ===============================
+                // 4. Effacer le canvas
+                // ===============================
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // ===============================
+                // 5. Axes
+                // ===============================
+                ctx.strokeStyle = "#888";
+                ctx.lineWidth = 1;
+
+                // Axe Y
+                ctx.beginPath();
+                ctx.moveTo(padding, padding);
+                ctx.lineTo(padding, padding + height);
+                ctx.stroke();
+
+                // Axe X
+                ctx.beginPath();
+                ctx.moveTo(padding, padding + height);
+                ctx.lineTo(padding + width, padding + height);
+                ctx.stroke();
+
+                // ===============================
+                // 6. Courbe
+                // ===============================
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                xs.forEach((x, i) => {
+                    const cx = mapX(x);
+                    const cy = mapY(ys[i]);
+                    if (i === 0) {
+                        ctx.moveTo(cx, cy);
+                    } else {
+                        ctx.lineTo(cx, cy);
+                    }
+                });
+
+                ctx.stroke();
+            </script>
+        </section>
+
+    </div>
+</div>
+
+<!-- ===============================
+     Dépendances JS
+=============================== -->
+<script src="https://unpkg.com/reveal.js/dist/reveal.js"></script>
+<script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+
+<script>
+    Reveal.initialize({
+        hash: true
+    });
+</script>
+
+</body>
+</html>

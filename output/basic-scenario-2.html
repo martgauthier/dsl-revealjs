@@ -1,0 +1,450 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Intro to Python</title>
+  <link rel="stylesheet" href="./public/reveal/dist/reveal.css">
+  <link rel="stylesheet" href="./public/reveal/plugin/highlight/monokai.css">
+  <script src="./public/reveal/dist/reveal.js"></script>
+  <script src="./public/reveal/plugin/highlight/highlight.js"></script>
+  <script src="./public/mathjax/tex-mml-chtml.js" defer></script>
+  <script src="./public/mathjs/math.js"></script>
+  
+  
+
+  
+  <style>
+  .reveal {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  :root {
+        --r-block-margin: 20px;
+        --r-code-font: monospace;
+    }
+        
+    ul {
+      display: inline-block;
+      text-align: left;
+    }
+
+    ul ul {
+      display: block;
+    }
+    
+    ol {
+      display: inline-block;
+      text-align: left;
+    }
+
+    ol ol {
+      display: block;
+    }
+
+    ol ul {
+      display: block;
+    }
+
+    ul ol {
+      display: block;
+    }
+    
+    .vertical-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      gap: 5px;
+    }
+
+    .horizontal-frame {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+      gap: 5px;
+    }
+    .reveal pre {
+            display: block;
+            position: relative;
+            width: 90%;
+            margin: var(--r-block-margin) auto;
+            text-align: left;
+            font-size: 1em;
+            font-family: var(--r-code-font);
+            line-height: 1.2em;
+            word-wrap: break-word;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .reveal code {
+            font-family: var(--r-code-font);
+            text-transform: none;
+            tab-size: 2;
+        }
+
+        .reveal pre code {
+            display: block;
+            padding: 5px;
+            overflow: auto;
+            max-height: 400px;
+            word-wrap: normal;
+        }
+
+        .reveal .code-wrapper {
+            white-space: normal;
+        }
+
+        .reveal .code-wrapper code {
+            white-space: pre;
+        }
+
+    .template-header, .template-footer {
+      position: absolute;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-height: 15%;
+    }
+
+    .template-header {
+      top: 0;
+    }
+    .template-footer {
+      bottom: 0;
+    }
+    
+
+    .XS-video { width: 5em; height: auto; }
+    .S-video  { width: 10em; height: auto; }
+    .M-video  { width: 20em; height: auto; }
+    .L-video  { width: 30em; height: auto; }
+    .XL-video { width: 35em; height: auto; }
+
+    .XS-image { width: 5em; height: auto; }
+    .S-image  { width: 10em; height: auto; }
+    .M-image  { width: 20em; height: auto; }
+    .L-image  { width: 30em; height: auto; }
+    .XL-image { width: 35em; height: auto; }
+
+    .XS-horizontal-frame { width: 25%; }
+    .S-horizontal-frame  { width: 33%; }
+    .M-horizontal-frame  { width: 50%; }
+    .L-horizontal-frame  { width: 75%; }
+    .XL-horizontal-frame { width: 100%; }
+
+    .XS-vertical-frame { height: 25%; }
+    .S-vertical-frame  { height: 33%; }
+    .M-vertical-frame  { height: 50%; }
+    .L-vertical-frame  { height: 75%; }
+    .XL-vertical-frame { height: 100%; }
+
+    .XS-code { max-width: 30em; font-size: 0.7em; margin-left: 30px !important; margin-right: 30px !important; }
+    .S-code  { max-width: 45em; font-size: 0.8em; margin-left: 30px !important; margin-right: 30px !important; }
+    .M-code  { max-width: 60em; font-size: 1.0em; margin-left: 30px !important; margin-right: 30px !important; }
+    .L-code  { max-width: 75em; font-size: 1.1em; margin-left: 30px !important; margin-right: 30px !important; }
+    .XL-code { max-width: 90em; font-size: 1.2em; margin-left: 30px !important; margin-right: 30px !important; }
+
+    .XS-latex { font-size: 0.6em; }
+    .S-latex  { font-size: 0.8em; }
+    .M-latex  { font-size: 1em; }
+    .L-latex  { font-size: 1.3em; }
+    .XL-latex { font-size: 1.6em; }
+    
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Italic.woff2') format('woff2');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Inter';
+        src: url('./public/reveal/dist/theme/fonts/inter/Inter-BoldItalic.woff2') format('woff2');
+        font-weight: 700;
+        font-style: italic;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="reveal">
+  
+  <div class="slides">
+    <section  >
+            <h1>Introduction to Python</h1>
+         </section>
+<section  >
+            <h1>Example of code</h1>
+
+    <div class="horizontal-frame ">
+      
+      <div class="fragment fade-in"
+           data-fragment-index="0">
+        
+<img id="image-0"
+     src="https://illustoon.com/photo/7252.png"
+     alt=""
+     class="XS-image">
+
+      </div>
+    
+<span class="fragment"
+      data-fragment-index="1"
+      data-replace-image="#image-0|https://res.cloudinary.com/env-imgs/images/f_auto/shopimages/products/1200/LC220MY-FRONT/220x220mm-clariana-mid-yellow-square-120gsm-peel-&-seal-.jpg">
+</span>
+
+
+<span class="fragment"
+      data-fragment-index="2"
+      data-replace-image="#image-0|https://illustoon.com/photo/thum/7258.png">
+</span>
+
+
+<pre class=XS-code>
+<code class="language-python"
+    data-trim
+    data-line-numbers="|1|2|3" data-fragment-index="0|1|2">
+squareColor='blue'
+squareColor='yellow'
+squareColor='green' 
+</code>
+</pre>
+
+    </div>
+  
+         </section>
+<section>
+          <section  >
+            
+    <div class="vertical-frame ">
+      <h1>Some slides with text and pictures</h1>
+
+    <div class="horizontal-frame ">
+      <p id="text-0" style="">Some text and picture</p>
+
+
+<img id="image-1"
+     src="https://illustoon.com/photo/7252.png"
+     alt=""
+     class="M-image">
+
+    </div>
+  
+
+    <div class="horizontal-frame ">
+      
+<img id="image-2"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="M-image">
+
+<p id="text-1" style="">Some other text and other picture</p>
+
+    </div>
+  
+    </div>
+  
+          </section>
+<section  >
+            <h1>Many pictures</h1>
+
+    <div class="vertical-frame ">
+      
+    <div class="horizontal-frame ">
+      
+<img id="image-3"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+
+<img id="image-4"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+
+<img id="image-5"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+    </div>
+  
+
+    <div class="horizontal-frame ">
+      
+<img id="image-6"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+<p id="text-2" style="font-size: 2em;">and a text</p>
+
+
+<img id="image-7"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+    </div>
+  
+
+    <div class="horizontal-frame ">
+      
+<img id="image-8"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+
+<img id="image-9"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+
+<img id="image-10"
+     src="https://illustoon.com/photo/thum/7258.png"
+     alt=""
+     class="S-image">
+
+    </div>
+  
+    </div>
+  
+          </section>
+        </section>
+  </div>
+  
+</div>
+
+<!-- Reveal JS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<!-- Script pour les animations de replace : -->
+<script>
+const replaceMemory = new Map();
+
+function rememberInitialState(el) {
+  if (replaceMemory.has(el)) return;
+
+  if (el.tagName === 'IMG') {
+    replaceMemory.set(el, el.src);
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    replaceMemory.set(el, source ? source.src : null);
+  } else {
+    replaceMemory.set(el, el.textContent);
+  }
+}
+
+function restoreInitialState(el) {
+  if (!replaceMemory.has(el)) return;
+
+  const value = replaceMemory.get(el);
+
+  if (el.tagName === 'IMG') {
+    el.src = value;
+  } else if (el.tagName === 'VIDEO') {
+    const source = el.querySelector('source');
+    if (source && value) {
+      source.src = value;
+      el.load();
+    }
+  } else {
+    el.textContent = value;
+  }
+}
+
+Reveal.on('fragmentshown', e => {
+  const f = e.fragment;
+  if (f.dataset.replaceText) {
+    const [selector, newText] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.textContent = newText;
+  }
+  if (f.dataset.replaceImage) {
+    const [selector, newSrc] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    rememberInitialState(el);
+    el.src = newSrc;
+  }
+  if (f.dataset.replaceVideo) {
+    const [selector, newSrc] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    const source = el.querySelector('source');
+    if (!source) return;
+
+    rememberInitialState(el);
+    source.src = newSrc;
+    el.load();
+    el.play();
+  }
+});
+
+Reveal.on('fragmenthidden', e => {
+  const f = e.fragment;
+
+  if (f.dataset.replaceText) {
+    const [selector] = f.dataset.replaceText.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceImage) {
+    const [selector] = f.dataset.replaceImage.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+
+  if (f.dataset.replaceVideo) {
+    const [selector] = f.dataset.replaceVideo.split('|');
+    const el = document.querySelector(selector);
+    if (el) restoreInitialState(el);
+  }
+});
+</script>
+
+<script>
+  Reveal.initialize({
+    transition: "slide",
+      
+      plugins: [ 
+          RevealHighlight,
+           
+      ],
+      hash: true,
+      slideNumber: false
+    });
+</script>
+
+
+</body>
+</html>
+    

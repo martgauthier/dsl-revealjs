@@ -4,10 +4,13 @@ export template {
   }
 
   fonts {
-    p => arial
+    h1 => times-new-roman
+    p => times-new-roman
   }
 
   colors {
     p => blue
   }
+
+  background => "#f7e3e1"
 }

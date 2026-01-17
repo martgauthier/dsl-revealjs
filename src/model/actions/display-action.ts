@@ -7,7 +7,4 @@ export class DisplayAction extends Action {
         super(step);
     }
 
-    accept(visitor: Visitor): void {
-        visitor.visitDisplayAction(this);
-    }
 }

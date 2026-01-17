@@ -6,8 +6,4 @@ export class HideAction extends Action {
     constructor(step : number = 1) {
         super(step);
     }
-
-    accept(visitor: Visitor): void {
-        visitor.visitHideAction(this);
-    }
 }

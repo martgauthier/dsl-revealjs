@@ -774,11 +774,6 @@ ${codeComponent.content}
     return content;
   }
 
-  visitCodeHighlightAction(codeHighlightAction: HighlightAction): void {}
-  visitDisplayAction(displayAction: DisplayAction): void {}
-  visitHideAction(hideAction: HideAction): void {}
-  visitReplaceAction(replaceAction: ReplaceAction) {}
-
   visitLatexComponent(latexComponent: LatexComponent): void {
       const formula = this.normalizeMultiline(latexComponent.formula);
 

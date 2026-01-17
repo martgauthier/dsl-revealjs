@@ -10,10 +10,9 @@ export class NestedSlide extends AbstractSlide implements Visitable {
     constructor(
         public transitionIn: Transition,
         public transitionOut: Transition,
-        public steps: Action[][],
         public subSlides: Slide[]
     ){
-        super(transitionIn, transitionOut, steps);
+        super(transitionIn, transitionOut);
     }
 
     accept(visitor: Visitor): void {

@@ -10,10 +10,9 @@ export class Slide extends AbstractSlide implements Visitable {
     constructor(
         public transitionIn: Transition,
         public transitionOut: Transition,
-        public steps: Action[][],
         public components: Component[],
         ){
-        super(transitionIn, transitionOut, steps);
+        super(transitionIn, transitionOut);
     }
 
     accept(visitor: Visitor): void {

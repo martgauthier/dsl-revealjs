@@ -82,13 +82,15 @@ SizeEnum returns string:
 ;
 
 Diapo:
-  'diapo' title=StringValue? '{'
-    template=TemplateDefinitionOrInclude?
-    annotationsEnabled=AnnotationsEnabled?
-    pageNumbering=PageNumberingEnabled?
-    slides+=AbstractSlide*
-  '}'
+  title=DiapoTitleDefinition?
+  template=TemplateDefinitionOrInclude?
+  annotationsEnabled=AnnotationsEnabled?
+  pageNumbering=PageNumberingEnabled?
+  slides+=AbstractSlide+
 ;
+
+DiapoTitleDefinition:
+  'tabTitle' value=StringValue;
 
 
 AbstractSlide:

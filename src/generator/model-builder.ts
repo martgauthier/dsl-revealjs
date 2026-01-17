@@ -118,7 +118,15 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   else if (diapoAst.template && diapoAst.template.include){
     template = buildTemplateFromInclude(diapoAst.template.include);
   }
-  return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false, diapoAst.title?.value, diapoAst.pageNumbering);
+  const defaultTransition = diapoAst.transition ? transitionConverter(diapoAst.transition) : Transition.DEFAULT;
+  return new Diapo(
+    slides, 
+    template,
+    diapoAst.annotationsEnabled ?? false,
+    diapoAst.title?.value,
+    diapoAst.pageNumbering, 
+    defaultTransition
+    );
 }
 
 function transitionConverter(value?: string): Transition {

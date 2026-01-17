@@ -5,4 +5,5 @@ export enum Transition {
     FADE = "fade",
     CONCAVE = "concave",
     CONVEX = "convex",
+    SLIDE = "slide",
 }

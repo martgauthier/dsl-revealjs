@@ -1,7 +1,7 @@
 export template {
 
   header {
-    title "SlideML" L
+    title "SlideML" M
   }
 
   colors {

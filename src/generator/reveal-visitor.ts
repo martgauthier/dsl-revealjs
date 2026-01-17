@@ -27,6 +27,7 @@ export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
 
   diapoTitle : String = "";
+  currentDiapo!: Diapo;
   pageNumberingEnabled : boolean = false;
   private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
@@ -78,9 +79,30 @@ export class RevealVisitor implements Visitor {
         --r-code-font: monospace;
     }
         
-    .reveal ul {
+    ul {
       display: inline-block;
       text-align: left;
+    }
+
+    ul ul {
+      display: block;
+    }
+    
+    ol {
+      display: inline-block;
+      text-align: left;
+    }
+
+    ol ol {
+      display: block;
+    }
+
+    ol ul {
+      display: block;
+    }
+
+    ul ol {
+      display: block;
     }
     
     .vertical-frame {
@@ -150,11 +172,11 @@ export class RevealVisitor implements Visitor {
     }
     ${this.templateStyle}
 
-    .XS-video { width: 20em; height: auto; }
-    .S-video  { width: 30em; height: auto; }
-    .M-video  { width: 40em; height: auto; }
-    .L-video  { width: 55em; height: auto; }
-    .XL-video { width: 70em; height: auto; }
+    .XS-video { width: 5em; height: auto; }
+    .S-video  { width: 10em; height: auto; }
+    .M-video  { width: 20em; height: auto; }
+    .L-video  { width: 30em; height: auto; }
+    .XL-video { width: 35em; height: auto; }
 
     .XS-image { width: 5em; height: auto; }
     .S-image  { width: 10em; height: auto; }
@@ -174,11 +196,11 @@ export class RevealVisitor implements Visitor {
     .L-vertical-frame  { height: 75%; }
     .XL-vertical-frame { height: 100%; }
 
-    .XS-code { max-width: 30em; font-size: 0.7em; }
-    .S-code  { max-width: 45em; font-size: 0.8em; }
-    .M-code  { max-width: 60em; font-size: 1em; }
-    .L-code  { max-width: 75em; font-size: 1.1em; }
-    .XL-code { max-width: 90em; font-size: 1.2em; }
+    .XS-code { max-width: 30em; font-size: 0.7em; margin-left: 30px !important; margin-right: 30px !important; }
+    .S-code  { max-width: 45em; font-size: 0.8em; margin-left: 30px !important; margin-right: 30px !important; }
+    .M-code  { max-width: 60em; font-size: 1.0em; margin-left: 30px !important; margin-right: 30px !important; }
+    .L-code  { max-width: 75em; font-size: 1.1em; margin-left: 30px !important; margin-right: 30px !important; }
+    .XL-code { max-width: 90em; font-size: 1.2em; margin-left: 30px !important; margin-right: 30px !important; }
 
     .XS-latex { font-size: 0.6em; }
     .S-latex  { font-size: 0.8em; }
@@ -322,6 +344,9 @@ Reveal.on('fragmenthidden', e => {
 
 <script>
   Reveal.initialize({
+    transition: "${this.currentDiapo.defaultTransition !== Transition.DEFAULT
+        ? this.currentDiapo.defaultTransition.toLowerCase()
+        : 'slide'}",
       ${this.annotationsEnabled ?
     `customcontrols: {
         controls: [
@@ -373,6 +398,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   visitDiapo(diapo: Diapo): void {
+    this.currentDiapo = diapo;
     if(diapo.template){
       diapo.template.accept(this);
     }
@@ -385,15 +411,29 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
   }
 
-  getTransitionAttrbute(slide: Slide): string {
-    if (slide.transitionIn === Transition.DEFAULT &&
-        slide.transitionOut === Transition.DEFAULT){
+  getTransitionAttrbute(slide: Slide, diapo: Diapo): string {
+    const inTransition =
+      slide.transitionIn !== Transition.DEFAULT
+        ? slide.transitionIn
+        : diapo.defaultTransition;
+
+    const outTransition =
+      slide.transitionOut !== Transition.DEFAULT
+        ? slide.transitionOut
+        : diapo.defaultTransition;
+
+    if (
+      inTransition === Transition.DEFAULT &&
+      outTransition === Transition.DEFAULT
+    ) {
       return "";
-    } 
-    const inPart = slide.transitionIn !== Transition.DEFAULT ? `${slide.transitionIn}-in` : "default-in";
-    const outPart = slide.transitionOut !== Transition.DEFAULT ? `${slide.transitionOut}-out` : "default-out";
-    return ` data-transition="${inPart} ${outPart}"`;
+    }
+
+    return ` data-transition="${inTransition}-in ${outTransition}-out"`;
   }
+
+
+
 
   visitSlide(slide: Slide): void {
     this.currentSlideContent = [];
@@ -404,7 +444,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
 
     if(!this.isNestedSlide){
       this.slidesHtml.push(
-        `<section ${this.getTransitionAttrbute(slide)} ${this.hasTemplate ? 'class="slide"' : ''}>
+        `<section ${this.getTransitionAttrbute(slide, this.currentDiapo)} ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
          </section>`
       );
@@ -420,7 +460,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const subslide of nestedSlide.subSlides) {
       subslide.accept(this);
       const subSlideContent =
-          `<section ${this.getTransitionAttrbute(subslide)} ${this.hasTemplate ? 'class="slide"' : ''}>
+          `<section ${this.getTransitionAttrbute(subslide, this.currentDiapo)} ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
           </section>`;
       nestedSlidesContent.push(subSlideContent);
@@ -442,11 +482,17 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
       fontSizeStyle = `font-size: ${textComponent.size};`;
     }
     let baseHtml;
-    if(textComponent.color) {
-      baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
-    } else {
-      baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
+    if(htmlWithoutP.includes("<ul>") || htmlWithoutP.includes("<ol>")) {
+      baseHtml = `<div id="${id}" style="${fontSizeStyle}">${htmlWithoutP}</div>`;
     }
+    else{
+      if(textComponent.color) {
+        baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
+      } else {
+        baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
+      }
+    }
+
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
     ) as ReplaceAction[];

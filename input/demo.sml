@@ -5,7 +5,7 @@ enable page numbering
 
 slide {
     title "SlideML Demonstration" XL
-    text "A complete demonstration of all the features implemented in our project" [#4266B8] L
+    text "**A complete demonstration of all the features implemented in our project**" [#4266B8] L
     text """Hajar El Gholabzouri
      Amelie Muller
      Gauthier Martin
@@ -13,20 +13,30 @@ slide {
 }
 
 slide {
+    transition in fade out fade
     title "What we implemented :" XL
     text
 """
-- Basic Elements :
-  - Basic components : text, images, videos, code
-  - Nested Slides
-  - Beautiful layouts using Frames
-- Mathematical Expressions
-- Animations & Transitions
-- Annotations
-""" XL
+1. Basic Elements
+   - Text, Images, Videos, Code
+   - Nested Slides
+   - Layouts using Frames
+2. Mathematical Expressions
+   - LaTeX formulas
+   - Plots with multiple functions
+3. Animations & Actions
+   - Display & Hide
+   - Replace
+   - Highlight
+4. Slide Transitions
+5. Templates
+6. Annotations
+7. Development Add-on
+""" M
 }
 
 slide {
+    transition in concave out concave
     title "1. Basic Elements"
     text "**Basic components**" [#4266B8] L
     text "We implemented multiple types of basic elements which are essential to create great presentations :" M
@@ -37,7 +47,7 @@ slide {
         }
         frame vertical {
             text "Videos :" L
-            video "./assets/rick-roll.mp4" autoPlay XS
+            video "./assets/rick-roll.mp4" autoPlay M
         }
         frame vertical {
             text "Text :" L
@@ -110,6 +120,7 @@ nestedSlide {
 }
 
 slide {
+    transition in convex out convex
     title "2. Mathematical Expressions"
     text "**1st 'A la carte' feature**" [#4266B8] L
 
@@ -130,10 +141,11 @@ slide {
 }
 
 slide {
+    transition in fade out fade
     title "2. Mathematical Expressions"
     text "**1st 'A la carte' feature**" [#4266B8] L
 
-    text "Plots may contain multiple function definitions, with explicit color customization for each function :"
+    text "We decided to push this feature further by the implementation of plots. Plots may contain multiple function definitions, with explicit color customization for each function :"
     frame horizontal{
        plot {
          function "x^2" [#f59e0b]
@@ -153,6 +165,7 @@ slide {
 }
 
 slide {
+    transition in zoom out zoom
     title "3. Annotations"
     text "**2nd 'A la carte' feature**" [#4266B8] L
     text "Using the two pencil icons placed on the bottom left of the slides, users can draw in multiple colors to give live explanations of their content :"
@@ -169,6 +182,7 @@ slide {
 }
 
 slide {
+    transition in fade out fade
     title "4. Display & Hide Actions"
     text "**Animations on multiple components**" [#4266B8] L
     text "The display and hide actions allow step-by-step control over the appearance of components." M
@@ -181,15 +195,17 @@ slide {
 
             image "https://picsum.photos/300/200" {
                 display in step 2
-            } S
+            } M
 
             video "./assets/rick-roll.mp4" {
                 display in step 3
-            } S
+            } M
         }
 
         frame horizontal {
-            text "This whole frame disappears at step 5"
+            text "This whole frame disappears at step 5"{
+                display in step 4
+            }
         } {
             hide in step 5
         }
@@ -207,13 +223,13 @@ slide {
             replace by "Updated text content" in step 2
         }
 
-        image "https://picsum.photos/200/200" {
-            replace by "https://picsum.photos/200/300" in step 3
-        }
+        image "./assets/frog.jpg" {
+            replace by "./assets/flower.webp" in step 3
+        } M
 
         video "./assets/rick-roll.mp4" {
-            replace by "./assets/rick-roll.mp4" in step 4
-        }
+            replace by "./assets/flower.mp4" in step 4
+        } M
     }
 }
 
@@ -239,127 +255,147 @@ public class HelloWorld {
 slide {
     title "7. Combining All Animations"
     text "**Complex animation scenarios**" [#4266B8] L
-    text "All animation types can be combined seamlessly within a single slide." M
+    text "All animation types can be combined seamlessly within a single slide. Multiple animations can also be apply to a single component." M
+    text "This is an exemple of images evolving with the code highlights" {
+        display in step 1
+        hide in step 6
+    }
+    frame horizontal {
+        image "https://illustoon.com/photo/7252.png" {
+            display in step 1
+            replace by "https://res.cloudinary.com/env-imgs/images/f_auto/shopimages/products/1200/LC220MY-FRONT/220x220mm-clariana-mid-yellow-square-120gsm-peel-&-seal-.jpg" in step 3
+            replace by "https://illustoon.com/photo/thum/7258.png" in step 4
+            hide in step 6
+        } XS
 
+        code language python
+"
+def changeColor(value):
+    newColor = yellow
+    result = newColor+value
+    return result
+" {
+            display in step 1
+            highlight lines 1 in step 2
+            highlight lines 2 in step 3
+            highlight lines 3 in step 4
+            highlight lines 4 in step 5
+            hide in step 6
+        } XS
+    }
+}
+
+
+slide {
+    transition in fade out slide
+    title "8. Transitions Between Slides"
+    text "**Slide transitions**" [#4266B8] L
+
+    text """ Throughout the presentation, we have illustrated that different transition types can be applied between slides.
+Transitions are defined at the slide level using two distinct properties: transition in and transition out """ M
+
+    text """
+All transitions are strongly typed using a dedicated enumeration:
+- zoom
+- fade
+- concave
+- convex
+- slide
+""" M
+
+    text """
+If no transition is explicitly defined, the DEFAULT value is applied.
+If a single transition is provided, it is interpreted as the entry transition.
+""" M
+
+}
+
+
+slide {
+    transition fade
+    title "9. Templates in SlideML"
+    text "**Design choice: templates written in the DSL**" [#4266B8] L
+    text "
+Templates define a reusable and professional visual identity.
+They separate presentation style from content and ensure
+consistency across all slides.
+" M
+    frame horizontal {
     frame vertical {
 
-        text "This text appears first" {
-            display in step 1
+
+    text """
+Templates may optionally define headers, footers, colors,
+backgrounds, fonts, dimensions and font sizes.
+Headers and footers are rendered outside slides to avoid
+duplication.
+""" M
+    text """
+SlideML supports two ways of defining templates:
+- Including an external template file written in SlideML
+- Defining the template directly inside the slide deck definition
+""" M
+
+
+}
+    code
+        language sml
+        "
+        export template {
+
+          header {
+            title 'SlideML' L
+          }
+
+          colors {
+            p  => black
+            h1 => #020617
+            h2 => #4266B8
+          }
+
+          fonts {
+            h1 => Montserrat
+            h2 => Montserrat
+            p  => Inter
+          }
+
+          footer {
+            text 'Université Côte d’Azur · DSL 2025–2026' S
+          }
+
+          background => '#E7ECF6'
         }
-
-        text "This text will be replaced" {
-            replace by "This text has been replaced" in step 3
-        }
-
-        image "https://picsum.photos/250/150" {
-            display in step 2
-            hide in step 5
-        }
-
-        code
-            language python
-"
-def square(x):
-    return x * x
-" {
-                display in step 4
-                highlight lines 1 in step 5
-            }
-    }
-}
-
-
-
-slide {
-    code language typescript
-    "visitDiapo(diapo: Diapo): void {
-    for (const slide of diapo.slides) {
-        slide.accept(this);
-    }
-    }"
-}
-
-slide {
-    transition in zoom out zoom
-    title "Make transitions"
-}
-
-slide {
-    transition in fade out fade
-    title "Display Animations"
-    text "Hello" {
-      display in step 1
-    }
-}
-
-slide {
-    title "Hide Animations"
-    text "Goodbye" {
-      hide in step 1
-    }
-}
-slide {
-    title "Replace Animations"
-    text "1..." {
-      replace by "...2" in step 1
+        " S
     }
 }
 
 
 slide {
-    title "Highlight Code Animations"
-    code language javascript
-    "const components = ast.components.map((c: any) => {
-     const builder = COMPONENT_BUILDERS[c.$type];
-     if (!builder) {
-       throw new Error(`Unknown component type: ${c.$type}`);
-     }
-     return builder(c);
-    });" {
-      highlight lines 1 in step 1
-      highlight lines 2 in step 2
-      highlight lines 3 in step 3
-      highlight lines 4 in step 4
-    } S
+    transition fade
+    title "10. Development Add-on"
+    text "**Live-reloading for SlideML**" [#4266B8] L
+
+    text """
+To facilitate slide deck development, we implemented a dedicated add-on
+providing a live-reloading experience, similar to modern web frameworks.
+""" M
+
+    text """
+The add-on automatically recompiles the slide deck whenever:
+- the grammar is modified
+- the slide content changes
+- the template file is updated
+""" M
+    text """
+It runs a local development server to display the presentation in a browser,
+shows compilation errors in a clear and styled way, and indicates when the
+development server is active.
+""" M
+
 }
 
-slide {
-    title "Complete plot"
-    frame horizontal{
-      plot {
-        function "x^2" [green]
-        function "sin(x)" [brown]
-        function "exp(x)" [pink]
-        domain [ -3 , 3 ]
-        samples 60
-        xUnit "x"
-        yUnit "f(x)"
-      } S
-      frame vertical{
-        latex "f(x)=x^2" [green]
-        latex "f(x)=sin(x)" [brown]
-        latex "f(x)=exp(x)" [pink]
-      }
-    }
-}
 
 slide {
-    text "# Write in Markdown"
-    text "**Bold text**"
-    text "- item 1\n- item 2\n- item 3"
-    text "`inline code`"
-}
-
-slide {
-    text "Or write Formulas"
-    text "# Théorème de Pythagore"
-    latex "a^2 + b^2 = c^2"
-    text "Formule fondamentale en géométrie"
-
-    text "# Fonction Gamma (cas particulier)"
-    latex """
-    \int_{0}^{+\infty} x^{n} e^{-\lambda x} \, dx
-    = \frac{n!}{\lambda^{n+1}}, \quad \lambda > 0
-    """
-    text "Lien entre intégrales et factorielle"
+    transition zoom
+        title "Thank you for your attention !"
 }

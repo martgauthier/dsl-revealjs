@@ -78,9 +78,13 @@ export class RevealVisitor implements Visitor {
         --r-code-font: monospace;
     }
         
-    .reveal section>ul {
+    ul {
       display: inline-block;
       text-align: left;
+    }
+
+    ul ul {
+      display: block;
     }
     
     .vertical-frame {

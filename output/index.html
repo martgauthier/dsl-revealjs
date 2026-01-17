@@ -74,21 +74,48 @@
         .reveal .code-wrapper code {
             white-space: pre;
         }
+
+    .template-header, .template-footer {
+      position: absolute;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-height: 15%;
+    }
+
+    .template-header {
+      top: 0;
+    }
+    .template-footer {
+      bottom: 0;
+    }
+    p { color: green; }
+p { font-size: 2em; }
+
   </style>
 
 </head>
 <body>
 
 <div class="reveal">
+  <div class="template-header">
+<img id="image-0"
+     src="https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/zwpori82kr8sm8e1fvsp?ik-sanitizeSvg=true"
+     alt="">
+</div>
   <div class="slides">
-    <section>
-                <h1>Final test</h1>
+    <section class="slide">
+                <h1>Complete plot</h1>
 
-    <canvas id="plot-n9aw6i7xbe" width="720" height="480"></canvas>
+    <div class="horizontal-frame">
+      
+    <canvas id="plot-zqr98om5p3" width="720" height="480"></canvas>
 
     <script>
       (function() {
         const exprs = [math.compile("x^2"),math.compile("sin(x)"),math.compile("exp(x)")];
+        const colors = ["green","brown","pink"]
 
         const xmin = -3;
         const xmax = 3;
@@ -105,7 +132,7 @@
           });
         }
 
-        const canvas = document.getElementById("plot-n9aw6i7xbe");
+        const canvas = document.getElementById("plot-zqr98om5p3");
         const ctx = canvas.getContext("2d");
 
         const padding = 70;
@@ -148,10 +175,6 @@
           ctx.lineTo(padding + w, y0);
           ctx.stroke();
         }
-        
-        // Cadre du graphe
-        /*ctx.strokeStyle = "#555";
-        ctx.strokeRect(padding, padding, w, h);*/
 
         // Graduations
         const ticks = 5;
@@ -169,19 +192,18 @@
         }
 
         // Unités
-        ctx.fillText("x (s)", padding + w / 2 - 15, canvas.height - 20);
-
+        ctx.fillText("x (x)", padding + w / 2 - 15, canvas.height - 20);
         ctx.save();
         ctx.translate(20, padding + h / 2 + 20);
         ctx.rotate(-Math.PI / 2);
-        ctx.fillText("f(x) (f(s))", 0, 0);
+        ctx.fillText("f(x) (f(x))", 0, 0);
         ctx.restore();
 
         // Courbes
-        const colors = ["red", "blue", "green", "orange", "purple"];
+        
 
         ys.forEach((curve, idx) => {
-          ctx.strokeStyle = colors[idx % colors.length];
+          ctx.strokeStyle = colors[idx] ?? "black";
           ctx.lineWidth = 2;
           ctx.beginPath();
 
@@ -196,8 +218,40 @@
       })();
     </script>
   
+
+    <div class="vertical-frame">
+      
+  <div style="color: green;">
+    \[
+      f(x)=x^2
+    \]
+  </div>
+  
+
+  <div style="color: brown;">
+    \[
+      f(x)=sin(x)
+    \]
+  </div>
+  
+
+  <div style="color: pink;">
+    \[
+      f(x)=exp(x)
+    \]
+  </div>
+  
+    </div>
+  
+    </div>
+  
               </section>
   </div>
+  <div class="template-footer">
+<img id="image-1"
+     src="https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/18c05fe098149fb63b274945ce1a672e"
+     alt="">
+</div>
 </div>
 
 <!-- Reveal JS -->

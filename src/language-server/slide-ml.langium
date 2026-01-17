@@ -146,7 +146,7 @@ PlotProperty
   ;
 
 PlotFunction
-  : 'function' value=STRING
+  : 'function' value=STRING color=TextColorPrecision?
   ;
 
 PlotDomain

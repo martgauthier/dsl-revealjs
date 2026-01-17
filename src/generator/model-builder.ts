@@ -20,6 +20,7 @@ import {HideAction} from "../model/actions/hide-action.js";
 import {HighlightAction} from "../model/actions/highlight-action.js";
 import {ReplaceAction} from "../model/actions/replace-action.js";
 import {PlotComponent} from "../model/components/plot-component.js";
+import type {PlotFunctionDef} from "../model/components/plot-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -180,7 +181,7 @@ function buildActions(actionBlockAst: any): Action[] {
 }
 
 function buildPlotComponent(ast : any ){
-  const functions: string[] = [];
+  const functions: PlotFunctionDef[] = [];
   let domain: [number, number] | [any, any] = [-10, 10];
   let samples = 300;
   let xUnit = "";
@@ -189,7 +190,10 @@ function buildPlotComponent(ast : any ){
   for (const prop of ast.properties ?? []) {
     switch (prop.$type) {
       case "PlotFunction":
-        functions.push(prop.value);
+        functions.push({
+          expr: prop.value,
+          color: prop.color.color
+        });
         break;
 
       case "PlotDomain":

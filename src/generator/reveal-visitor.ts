@@ -682,17 +682,24 @@ ${codeComponent.content}
 
     visitPlotComponent(plot: PlotComponent): void {
         const id = `plot-${Math.random().toString(36).slice(2)}`;
-
+        const functions = plot.functions;
         const functionsJs = plot.functions
-            .map(f => `math.compile("${f}")`)
+            .map(f => `math.compile("${f.expr}")`)
             .join(",");
-
+        console.log("functions0 : ",functions);
+        const colors = functions
+            .map(f =>{
+                console.log("f.color : ", f.color);
+                return `"${f.color ?? "black"}"`;
+            } )
+            .join(",");
         const canvasHtml = `
     <canvas id="${id}" width="720" height="480"></canvas>
 
     <script>
       (function() {
         const exprs = [${functionsJs}];
+        const colors = [${colors}]
 
         const xmin = ${plot.domain[0]};
         const xmax = ${plot.domain[1]};
@@ -777,10 +784,10 @@ ${codeComponent.content}
         ctx.restore();
 
         // Courbes
-        const colors = ["red", "blue", "green", "orange", "purple"];
+        
 
         ys.forEach((curve, idx) => {
-          ctx.strokeStyle = colors[idx % colors.length];
+          ctx.strokeStyle = colors[idx] ?? "black";
           ctx.lineWidth = 2;
           ctx.beginPath();
 

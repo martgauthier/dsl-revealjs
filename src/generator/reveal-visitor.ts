@@ -78,7 +78,7 @@ export class RevealVisitor implements Visitor {
         --r-code-font: monospace;
     }
         
-    .reveal ul {
+    .reveal section>ul {
       display: inline-block;
       text-align: left;
     }
@@ -436,7 +436,8 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parse(normalized) as string;
     const htmlWithoutP = html
-        .replace(/^<p>/, '');
+        .replace(/^<p>/, '')
+        .replace(/\n/g, "<br />");
     let fontSizeStyle = "";
     if (textComponent.size !== Size.DEFAULT) {
       fontSizeStyle = `font-size: ${textComponent.size};`;

@@ -56,6 +56,12 @@ diapo {
   }
 
   slide {
+    transition in zoom out zoom
+    title "Make transitions"
+  }
+
+  slide {
+    transition in fade out fade
     title "Display Animations"
     text "Hello"{
       display in step 1

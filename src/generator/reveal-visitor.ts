@@ -19,6 +19,7 @@ import type {LatexComponent} from "../model/components/latex-component.js";
 import type { Template } from "../model/template.js";
 import type {TitleComponent} from "../model/components/title-component.js";
 import {Size} from "../model/enums/size.enum.js";
+import { Transition } from "../model/enums/transition.enum.js";
 
 export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
@@ -345,16 +346,34 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const component of slide.components) {
       component.accept(this);
     }
+    const transitionAttr = (() => {
+      if (
+        slide.transitionIn === Transition.DEFAULT &&
+        slide.transitionOut === Transition.DEFAULT
+      ) return "";
+
+      const inPart =
+        slide.transitionIn !== Transition.DEFAULT
+          ? `${slide.transitionIn}-in`
+          : "default-in";
+
+      const outPart =
+        slide.transitionOut !== Transition.DEFAULT
+          ? `${slide.transitionOut}-out`
+          : "default-out";
+
+      return ` data-transition="${inPart} ${outPart}"`;
+    })();
 
     if(!this.isNestedSlide){
           this.slidesHtml.push(
-              `<section ${this.hasTemplate ? 'class="slide"' : ''}>
+            `<section ${transitionAttr} ${this.hasTemplate ? 'class="slide"' : ''}>
                 ${this.currentSlideContent.join("\n")}
               </section>`
           );
     }
-
   }
+
 
   visitNestedSlide(nestedSlide: NestedSlide) {
     this.isNestedSlide = true;
@@ -375,7 +394,6 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   async visitTextComponent(textComponent: TextComponent): Promise<void> {
-
     const id = `text-${this.textIdCounter++}`;
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parse(normalized) as string;
@@ -384,8 +402,12 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         .replace(/<\/p>$/, '');
 
 
-    const baseHtml =
-        `<p id="${id}">${htmlWithoutP}</p>`;
+    let baseHtml;
+    if(textComponent.color) {
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color};">${htmlWithoutP}</p>`;
+    } else {
+      baseHtml = `<p id="${id}">${htmlWithoutP}</p>`;
+    }
 
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -656,16 +678,30 @@ ${codeComponent.content}
   visitDisplayAction(displayAction: DisplayAction): void {}
   visitHideAction(hideAction: HideAction): void {}
   visitReplaceAction(replaceAction: ReplaceAction) {}
-    visitLatexComponent(latexComponent: LatexComponent): void {
-        const formula = this.normalizeMultiline(latexComponent.formula);
+
+  visitLatexComponent(latexComponent: LatexComponent): void {
+      const formula = this.normalizeMultiline(latexComponent.formula);
+
+      if(latexComponent.color) {
         this.currentSlideContent.push(`
-    <div>
-      \\[
-        ${formula}
-      \\]
-    </div>
-    `);
-    }
+  <div style="color: ${latexComponent.color};">
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+      else {
+      this.currentSlideContent.push(`
+  <div>
+    \\[
+      ${formula}
+    \\]
+  </div>
+  `);
+      }
+  }
+
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT
     switch (titleComponent.size) {
@@ -684,6 +720,11 @@ ${codeComponent.content}
       case Size.XS:
         titleNumber = "5";
     }
-    this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    if(titleComponent.color) {
+      this.currentSlideContent.push(`<h${titleNumber} style="color: ${titleComponent.color};">${titleComponent.text}</h${titleNumber}>`);
+    }
+    else {
+      this.currentSlideContent.push(`<h${titleNumber}>${titleComponent.text}</h${titleNumber}>`);
+    }
   }
 }

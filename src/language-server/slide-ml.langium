@@ -86,6 +86,7 @@ Diapo:
   '}'
 ;
 
+
 AbstractSlide:
   Slide | NestedSlide
 ;
@@ -95,9 +96,17 @@ NestedSlide:
     subSlides+=Slide*
   '}'
 ;
-
+TransitionType returns string:
+  'none' | 'default' | 'zoom' | 'fade' | 'concave' | 'convex'
+;
 Slide:
   'slide' '{'
+    ('transition'
+      ( 'in' transitionIn=TransitionType
+      | 'out' transitionOut=TransitionType
+      | transition=TransitionType
+      )*
+    )?
     components+=Component*
   '}'
 ;
@@ -108,7 +117,11 @@ Component:
 ;
 
 TextComponent:
-  'text' value=StringValue actionBlock=ActionBlock?
+  'text' value=StringValue color=TextColorPrecision? actionBlock=ActionBlock?
+;
+
+TextColorPrecision:
+  '[' color=UNQUOTED_NO_SPACES ']'
 ;
 
 VideoComponent:
@@ -163,18 +176,21 @@ LineRange:
 
 LatexComponent:
   'latex' formula=StringValue
+  color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 TitleComponent:
-  'title' text=STRING
+  'title' text=STRING color=TextColorPrecision?
   actionBlock=ActionBlock?
 ;
 
 terminal ARROW:
   '=>';
+
 terminal UNQUOTED_NO_SPACES:
-  /[^\s\r\n]+/;
+    /[^\s\[\]]+/
+;
 
 hidden terminal WS: /\s+/;
 hidden terminal NEWLINE: /\r?\n/;

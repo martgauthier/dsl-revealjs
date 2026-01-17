@@ -150,11 +150,11 @@ export class RevealVisitor implements Visitor {
     }
     ${this.templateStyle}
 
-    .XS-video { width: 20em; height: auto; }
-    .S-video  { width: 30em; height: auto; }
-    .M-video  { width: 40em; height: auto; }
-    .L-video  { width: 55em; height: auto; }
-    .XL-video { width: 70em; height: auto; }
+    .XS-video { width: 5em; height: auto; }
+    .S-video  { width: 10em; height: auto; }
+    .M-video  { width: 20em; height: auto; }
+    .L-video  { width: 30em; height: auto; }
+    .XL-video { width: 35em; height: auto; }
 
     .XS-image { width: 5em; height: auto; }
     .S-image  { width: 10em; height: auto; }
@@ -442,11 +442,17 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
       fontSizeStyle = `font-size: ${textComponent.size};`;
     }
     let baseHtml;
-    if(textComponent.color) {
-      baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
-    } else {
-      baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
+    if(htmlWithoutP.includes("<ul>")) {
+      baseHtml = `<div id="${id}" style="${fontSizeStyle}">${htmlWithoutP}</div>`;
     }
+    else{
+      if(textComponent.color) {
+        baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
+      } else {
+        baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
+      }
+    }
+
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
     ) as ReplaceAction[];

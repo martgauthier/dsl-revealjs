@@ -112,8 +112,8 @@ Slide:
 ;
 
 Component:
-  (TextComponent | VideoComponent | ImageComponent | CodeComponent |
-  FrameComponent | LatexComponent | TitleComponent) size=SizeEnum?
+  (TextComponent | PlotComponent | VideoComponent | ImageComponent | CodeComponent |
+  FrameComponent | LatexComponent | TitleComponent ) size=SizeEnum?
 ;
 
 TextComponent:
@@ -138,6 +138,41 @@ CodeComponent:
     value=STRING
     actionBlock=ActionBlock?
 ;
+
+PlotComponent:
+    'plot' '{'
+      properties+=PlotProperty*
+    '}'
+    actionBlock=ActionBlock?
+  ;
+
+PlotProperty
+  : PlotFunction
+  | PlotDomain
+  | PlotSamples
+  | PlotXUnit
+  | PlotYUnit
+  ;
+
+PlotFunction
+  : 'function' value=STRING color=TextColorPrecision?
+  ;
+
+PlotDomain
+  : 'domain' '[' min=UNQUOTED_NO_SPACES ',' max=UNQUOTED_NO_SPACES ']'
+  ;
+
+PlotSamples
+  : 'samples' value=UNQUOTED_NO_SPACES
+  ;
+
+PlotXUnit
+  : 'xUnit' value=STRING
+  ;
+
+PlotYUnit
+  : 'yUnit' value=STRING
+  ;
 
 FrameComponent:
   'frame' direction=DIRECTION '{'
@@ -173,6 +208,7 @@ ReplaceAction:
 LineRange:
   start=UNQUOTED_NO_SPACES ('-' end=UNQUOTED_NO_SPACES)?
 ;
+
 
 LatexComponent:
   'latex' formula=StringValue

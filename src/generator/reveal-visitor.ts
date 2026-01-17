@@ -27,6 +27,7 @@ export class RevealVisitor implements Visitor {
   constructor(public devServerMode: boolean = false) {}
 
   diapoTitle : String = "";
+  currentDiapo!: Diapo;
   pageNumberingEnabled : boolean = false;
   private annotationsEnabled : boolean = false;
   private slidesHtml: string[] = [];
@@ -343,6 +344,9 @@ Reveal.on('fragmenthidden', e => {
 
 <script>
   Reveal.initialize({
+    transition: "${this.currentDiapo.defaultTransition !== Transition.DEFAULT
+        ? this.currentDiapo.defaultTransition.toLowerCase()
+        : 'slide'}",
       ${this.annotationsEnabled ?
     `customcontrols: {
         controls: [
@@ -394,6 +398,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
   }
 
   visitDiapo(diapo: Diapo): void {
+    this.currentDiapo = diapo;
     if(diapo.template){
       diapo.template.accept(this);
     }
@@ -406,15 +411,29 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
   }
 
-  getTransitionAttrbute(slide: Slide): string {
-    if (slide.transitionIn === Transition.DEFAULT &&
-        slide.transitionOut === Transition.DEFAULT){
+  getTransitionAttrbute(slide: Slide, diapo: Diapo): string {
+    const inTransition =
+      slide.transitionIn !== Transition.DEFAULT
+        ? slide.transitionIn
+        : diapo.defaultTransition;
+
+    const outTransition =
+      slide.transitionOut !== Transition.DEFAULT
+        ? slide.transitionOut
+        : diapo.defaultTransition;
+
+    if (
+      inTransition === Transition.DEFAULT &&
+      outTransition === Transition.DEFAULT
+    ) {
       return "";
-    } 
-    const inPart = slide.transitionIn !== Transition.DEFAULT ? `${slide.transitionIn}-in` : "default-in";
-    const outPart = slide.transitionOut !== Transition.DEFAULT ? `${slide.transitionOut}-out` : "default-out";
-    return ` data-transition="${inPart} ${outPart}"`;
+    }
+
+    return ` data-transition="${inTransition}-in ${outTransition}-out"`;
   }
+
+
+
 
   visitSlide(slide: Slide): void {
     this.currentSlideContent = [];
@@ -425,7 +444,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
 
     if(!this.isNestedSlide){
       this.slidesHtml.push(
-        `<section ${this.getTransitionAttrbute(slide)} ${this.hasTemplate ? 'class="slide"' : ''}>
+        `<section ${this.getTransitionAttrbute(slide, this.currentDiapo)} ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
          </section>`
       );
@@ -441,7 +460,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     for (const subslide of nestedSlide.subSlides) {
       subslide.accept(this);
       const subSlideContent =
-          `<section ${this.getTransitionAttrbute(subslide)} ${this.hasTemplate ? 'class="slide"' : ''}>
+          `<section ${this.getTransitionAttrbute(subslide, this.currentDiapo)} ${this.hasTemplate ? 'class="slide"' : ''}>
             ${this.currentSlideContent.join("\n")}
           </section>`;
       nestedSlidesContent.push(subSlideContent);

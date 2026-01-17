@@ -1,4 +1,3 @@
-diapo "DSL Demo" {
   use template "./template_export.sml"
   enable annotations
   slide {
@@ -140,4 +139,3 @@ diapo "DSL Demo" {
   """
     text "Lien entre intégrales et factorielle"
   }
-}

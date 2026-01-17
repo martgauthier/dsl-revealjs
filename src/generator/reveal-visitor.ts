@@ -87,7 +87,7 @@ export class RevealVisitor implements Visitor {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-evenly;
+      justify-content: space-around;
       gap: 5px;
     }
 
@@ -95,7 +95,7 @@ export class RevealVisitor implements Visitor {
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: space-evenly;
+      justify-content: space-around;
       gap: 5px;
     }
     .reveal pre {
@@ -436,20 +436,17 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     const normalized = this.normalizeMultiline(textComponent.textContent);
     const html = marked.parse(normalized) as string;
     const htmlWithoutP = html
-        .replace(/^<p>/, '')
-        .replace(/<\/p>$/, '');
-
+        .replace(/^<p>/, '');
     let fontSizeStyle = "";
     if (textComponent.size !== Size.DEFAULT) {
       fontSizeStyle = `font-size: ${textComponent.size};`;
     }
     let baseHtml;
     if(textComponent.color) {
-      baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}</p>`;
+      baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
     } else {
-      baseHtml = `<p id="${id}">${htmlWithoutP}</p>`;
+      baseHtml = `<p id="${id}">${htmlWithoutP}`;
     }
-
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
     ) as ReplaceAction[];
@@ -464,7 +461,6 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
         baseHtml,
         nonReplaceActions
     );
-
     const replaceFragments = replaceActions.map(replace => `
 <span class="fragment"
       data-fragment-index="${replace.step-1}"

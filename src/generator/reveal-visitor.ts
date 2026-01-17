@@ -445,7 +445,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     if(textComponent.color) {
       baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
     } else {
-      baseHtml = `<p id="${id}">${htmlWithoutP}`;
+      baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
     }
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction

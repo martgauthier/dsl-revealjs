@@ -86,6 +86,7 @@ Diapo:
   template=TemplateDefinitionOrInclude?
   annotationsEnabled=AnnotationsEnabled?
   pageNumbering=PageNumberingEnabled?
+  ('transition' transition=TransitionType )?
   slides+=AbstractSlide+
 ;
 
@@ -103,7 +104,7 @@ NestedSlide:
   '}'
 ;
 TransitionType returns string:
-  'none' | 'default' | 'zoom' | 'fade' | 'concave' | 'convex'
+  'none' | 'zoom' | 'fade' | 'concave' | 'convex' | 'slide'
 ;
 Slide:
   'slide' '{'

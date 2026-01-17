@@ -87,6 +87,23 @@ export class RevealVisitor implements Visitor {
       display: block;
     }
     
+    ol {
+      display: inline-block;
+      text-align: left;
+    }
+
+    ol ol {
+      display: block;
+    }
+
+    ol ul {
+      display: block;
+    }
+
+    ul ol {
+      display: block;
+    }
+    
     .vertical-frame {
       display: flex;
       flex-direction: column;
@@ -446,7 +463,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
       fontSizeStyle = `font-size: ${textComponent.size};`;
     }
     let baseHtml;
-    if(htmlWithoutP.includes("<ul>")) {
+    if(htmlWithoutP.includes("<ul>") || htmlWithoutP.includes("<ol>")) {
       baseHtml = `<div id="${id}" style="${fontSizeStyle}">${htmlWithoutP}</div>`;
     }
     else{

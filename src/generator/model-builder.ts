@@ -156,7 +156,6 @@ function buildSlide(slideAst: any): Slide {
   return new Slide(
     transitionIn,
     transitionOut,
-    [],
     components
   );
 }
@@ -168,7 +167,6 @@ function buildNestedSlide(nestedSlideAst: any): NestedSlide {
   return new NestedSlide(
     Transition.DEFAULT, // transitionIn
     Transition.DEFAULT, // transitionOut
-    [],               // steps (actions)
     subSlides         // subSlides
   )
 }

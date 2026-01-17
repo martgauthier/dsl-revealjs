@@ -602,7 +602,8 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
     if(template.fontSizes){
       for(const tag in template.fontSizes){
-        templateStyle += `${tag} { font-size: ${template.fontSizes[tag]}; }\n`;
+        let sizeValue = this.letterToSize(template.fontSizes[tag]?.valueOf());
+        templateStyle += `${tag} { font-size: ${sizeValue}; }\n`;
       }
     }
     if(template.dimensions){

@@ -68,7 +68,7 @@ Temp_Colors: 'colors' '{' colorMappings+=UnquotedStringBinding+ '}';
 
 Temp_Background: 'background' ARROW backgroundValue=STRING;
 
-Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=UnquotedStringBinding+ '}';
+Temp_FontSizes: 'fontSizes' '{' fontSizeMappings+=SizeMapping+ '}';
 
 Temp_Dimensions: 'dimensions' '{' dimensionMappings+=SizeMapping+ '}';
 

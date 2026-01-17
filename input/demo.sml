@@ -9,7 +9,7 @@ diapo "DSL Demo" {
   nestedSlide {
     slide {
       transition in concave out convex
-      text "Here is a nested Slide"
+      text "Here is a nested Slide" XS
     }
 
     slide {
@@ -23,7 +23,7 @@ diapo "DSL Demo" {
 
     slide {
       text "And you found Rick ! (yes, you can also put videos)"
-      video "./assets/rick-roll.mp4" autoPlay
+      video "./assets/rick-roll.mp4" autoPlay XS
     }
   }
 
@@ -34,17 +34,17 @@ diapo "DSL Demo" {
       frame horizontal {
         text "top left"
         text "top right"
-      }
+      } M
       frame horizontal {
         text "bottom left"
         text "bottom right"
-      }
-    }
+      } L
+    } XL
   }
 
   slide {
     text "put images"
-    image "https://picsum.photos/400/300" alt "image aléatoire"
+    image "https://picsum.photos/400/300" alt "image aléatoire" M
   }
 
   slide {
@@ -98,7 +98,7 @@ diapo "DSL Demo" {
       highlight lines 2 in step 2
       highlight lines 3 in step 3
       highlight lines 4 in step 4
-    }
+    } S
   }
   slide {
     title "Complete plot"
@@ -111,7 +111,7 @@ diapo "DSL Demo" {
         samples 60
         xUnit "x"
         yUnit "f(x)"
-      }
+      } S
       frame vertical{
         latex "f(x)=x^2" [green]
         latex "f(x)=sin(x)" [brown]

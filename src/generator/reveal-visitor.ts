@@ -445,7 +445,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     if(textComponent.color) {
       baseHtml = `<p id="${id}" style="color: ${textComponent.color}; ${fontSizeStyle}">${htmlWithoutP}`;
     } else {
-      baseHtml = `<p id="${id}">${htmlWithoutP}`;
+      baseHtml = `<p id="${id}" style="${fontSizeStyle}">${htmlWithoutP}`;
     }
     const replaceActions = textComponent.actions.filter(
         a => a instanceof ReplaceAction
@@ -607,7 +607,7 @@ ${(this.devServerMode) ? '<script src="./dev-server-reload.js"></script>' : ''}
     }
     if(template.dimensions){
       for(const tag in template.dimensions){
-        let sizeValue = template.dimensions[tag]?.valueOf;
+        let sizeValue = this.letterToSize(template.dimensions[tag]?.valueOf());
         templateStyle += `${tag} { width: ${sizeValue}; height: ${sizeValue}; }\n`;
       }
     }
@@ -779,6 +779,20 @@ ${codeComponent.content}
         sizeLetter =  "XS";
     }
     return sizeLetter;
+  }
+  letterToSize(letter: any): Size {
+    switch (letter) {
+      case "XL":
+        return Size.XL;
+      case "L":
+        return Size.L;
+      case "M":
+        return Size.M;
+      case "S":
+        return Size.S;
+      default:
+        return Size.XS;
+    }
   }
   visitTitleComponent(titleComponent: TitleComponent) {
     let titleNumber = "1"; // Size.DEFAULT

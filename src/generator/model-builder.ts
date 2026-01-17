@@ -1,9 +1,9 @@
-import { Diapo } from "../model/diapo.js";
-import { Slide } from "../model/slide.js";
-import { TextComponent } from "../model/components/text-component.js";
-import { Size } from "../model/enums/size.enum.js";
-import { VideoComponent } from "../model/components/video-component.js";
-import { ImageComponent } from "../model/components/image-component.js";
+import {Diapo} from "../model/diapo.js";
+import {Slide} from "../model/slide.js";
+import {TextComponent} from "../model/components/text-component.js";
+import {Size} from "../model/enums/size.enum.js";
+import {VideoComponent} from "../model/components/video-component.js";
+import {ImageComponent} from "../model/components/image-component.js";
 import { LatexComponent } from "../model/components/latex-component.js";
 import type {Component} from "../model/components/component.abstract.js";
 import {CodeComponent} from "../model/components/code-component.js";
@@ -15,11 +15,13 @@ import { Transition } from "../model/enums/transition.enum.js";
 import { Template } from "../model/template.js";
 import { parseTemplateFromFile } from "../template_export_parser.js";
 import path from "path";
-import { DisplayAction } from "../model/actions/display-action.js";
-import type { Action } from "../model/actions/action.abstract.js";
-import { HideAction } from "../model/actions/hide-action.js";
-import { HighlightAction } from "../model/actions/highlight-action.js";
-import { ReplaceAction } from "../model/actions/replace-action.js";
+import {DisplayAction} from "../model/actions/display-action.js";
+import type {Action} from "../model/actions/action.abstract.js";
+import {HideAction} from "../model/actions/hide-action.js";
+import {HighlightAction} from "../model/actions/highlight-action.js";
+import {ReplaceAction} from "../model/actions/replace-action.js";
+import {PlotComponent} from "../model/components/plot-component.js";
+import type {PlotFunctionDef} from "../model/components/plot-component.js";
 
 type ComponentBuilder = (ast:any) => Component;
 
@@ -29,6 +31,7 @@ const COMPONENT_BUILDERS : Record<string, ComponentBuilder> = {
   TextComponent: (ast) => {
     return new TextComponent(ast.value, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock));
   },
+  PlotComponent: (ast) => { return buildPlotComponent(ast)},
   TitleComponent: (ast) => new TitleComponent(ast.text, ast.color?.color, sizeConverter(ast.size), buildActions(ast.actionBlock)),
   VideoComponent: (ast) => new VideoComponent(ast.src, ast.autoPlay,sizeConverter(ast.size), buildActions(ast.actionBlock)),
   ImageComponent: (ast) => new ImageComponent(ast.src,sizeConverter(ast.size), buildActions(ast.actionBlock), ast.alt),
@@ -71,7 +74,6 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
       colors[pair.key] = pair.value;
     });
     template.colors = colors;
-    console.log("Template colors:", template.colors);
   },
   "Temp_Fonts": (section: any, template: Template) => {
     let fonts: Record<any, any> = {};
@@ -102,7 +104,7 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
 export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   PROCESSED_FILE_PATH = absoluteFilePath;
   const slides = diapoAst.slides.map((abstractSlideAst: any) => {
-    if (abstractSlideAst.$type === "Slide") {
+    if(abstractSlideAst.$type === "Slide"){
       return buildSlide(abstractSlideAst);
     }
     return buildNestedSlide(abstractSlideAst)
@@ -118,6 +120,7 @@ export function buildDiapo(diapoAst: any, absoluteFilePath: string): Diapo {
   }
   return new Diapo(slides, template, diapoAst.annotationsEnabled ?? false);
 }
+
 function transitionConverter(value?: string): Transition {
   if (!value) return Transition.DEFAULT;
   return Transition[value.toUpperCase() as keyof typeof Transition];
@@ -170,9 +173,7 @@ function buildActions(actionBlockAst: any): Action[] {
       case "DisplayAction":
         return new DisplayAction(a.step ?? 1);
       case "HideAction":
-        console.log("a.step : ", a.step);
         let h = new HideAction(a.step ?? 1);
-        console.log("h",h);
         return h;
       case "HighlightAction": {
         const start = a.range.start;
@@ -192,6 +193,49 @@ function buildActions(actionBlockAst: any): Action[] {
   });
 }
 
+function buildPlotComponent(ast : any ){
+  const functions: PlotFunctionDef[] = [];
+  let domain: [number, number] | [any, any] = [-10, 10];
+  let samples = 300;
+  let xUnit = "";
+  let yUnit = "";
+
+  for (const prop of ast.properties ?? []) {
+    switch (prop.$type) {
+      case "PlotFunction":
+        functions.push({
+          expr: prop.value,
+          color: prop.color.color
+        });
+        break;
+
+      case "PlotDomain":
+        domain = [prop.min, prop.max];
+        break;
+
+      case "PlotSamples":
+        samples = prop.value;
+        break;
+
+      case "PlotXUnit":
+        xUnit = prop.value;
+        break;
+
+      case "PlotYUnit":
+        yUnit = prop.value;
+        break;
+    }
+  }
+  return new PlotComponent(
+      functions,
+      domain,
+      samples,
+      xUnit,
+      yUnit,
+      sizeConverter(ast.size),
+      buildActions(ast.actionBlock)
+  );
+}
 
 function dedent(text: string): string {
   const lines = text.replace(/\t/g, "  ").split("\n");
@@ -207,7 +251,6 @@ function dedent(text: string): string {
 
   return lines.map(l => l.slice(indent)).join("\n");
 }
-
 
 export function buildTemplateFromDefinition(templateAst: any): Template | undefined {
   let template = new Template();
@@ -225,12 +268,7 @@ function buildTemplateFromInclude(templateIncludeAst: any): Template {
     //The file path will be considered as relative to the currently processed file directory, we need to resolve it
     let currentFileDir = path.dirname(PROCESSED_FILE_PATH);
     filePath = path.resolve(currentFileDir, filePath);
-
-    console.log("Including template from file:", filePath);
     let template = parseTemplateFromFile(filePath);
-
-    console.log("parsed template: ", template);
-
     return template;
 }
 

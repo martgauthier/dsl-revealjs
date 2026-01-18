@@ -85,7 +85,7 @@ const TEMPLATE_BUILDERS : Record<string, any> = {
   "Temp_FontSizes": (section: any, template: Template) => {
     let fontSizes: Record<any, any> = {};
     section.fontSizeMappings.forEach((pair: any) => {
-      fontSizes[pair.key] = pair.value;
+      fontSizes[pair.key] = sizeConverter(pair.value);
     });
     template.fontSizes = fontSizes;
   },

@@ -103,16 +103,18 @@ NestedSlide:
     subSlides+=Slide*
   '}'
 ;
+
 TransitionType returns string:
   'none' | 'zoom' | 'fade' | 'concave' | 'convex' | 'slide'
 ;
+
 Slide:
   'slide' '{'
     ('transition'
-      ( 'in' transitionIn=TransitionType
-      | 'out' transitionOut=TransitionType
-      | transition=TransitionType
-      )*
+      (
+        (('in' transitionIn=TransitionType)? ('out' transitionOut=TransitionType)?)
+        | transition=TransitionType
+      )
     )?
     components+=Component*
   '}'
